@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stories - Bright Minds</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="animated-bg"></div>
+    <div class="dashboard">
+        <button class="btn btn-secondary" onclick="location.href='dashboard.php'">
+            <span class="btn-icon">←</span>
+            Back to Dashboard
+        </button>
+        
+        <h1 style="color: var(--primary-blue); margin: 30px 0; font-size: 2.5rem; text-align: center;">
+            📖 Choose a Story
+        </h1>
+        
+        <div class="activities-grid" id="storiesContainer">
+            <!-- Story 1: The Brave Little Elephant -->
+            <div class="activity-card" onclick="readStory(1)">
+                <div class="activity-icon">🐘</div>
+                <h3>The Brave Little Elephant</h3>
+                <p>A tale of courage and friendship</p>
+                <div style="margin-top: 15px; color: var(--primary-blue); font-weight: bold;">
+                    <span>⏱ 5 min read</span><br>
+                    <span>⚡ 30 XP</span>
+                </div>
+            </div>
+            
+            <!-- Story 2: The Rainbow Painter -->
+            <div class="activity-card" onclick="readStory(2)">
+                <div class="activity-icon">🎨</div>
+                <h3>The Rainbow Painter</h3>
+                <p>Discover the magic of creativity</p>
+                <div style="margin-top: 15px; color: var(--primary-blue); font-weight: bold;">
+                    <span>⏱ 4 min read</span><br>
+                    <span>⚡ 25 XP</span>
+                </div>
+            </div>
+            
+            <!-- Story 3: The Curious Cat's Journey -->
+            <div class="activity-card" onclick="readStory(3)">
+                <div class="activity-icon">🐱</div>
+                <h3>The Curious Cat's Journey</h3>
+                <p>Adventure awaits the curious!</p>
+                <div style="margin-top: 15px; color: var(--primary-blue); font-weight: bold;">
+                    <span>⏱ 6 min read</span><br>
+                    <span>⚡ 35 XP</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Check if user is logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const sessionData = localStorage.getItem('brightMindsSession');
+            if (!sessionData) {
+                window.location.href = 'index.html';
+            }
+        });
+        
+        function readStory(storyId) {
+            window.location.href = `story-read.html?id=${storyId}`;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Achievements - Bright Minds</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/celebrations.css">
+    <style>
+        .achievements-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .page-header h1 {
+            font-size: 3rem;
+            color: var(--primary-blue);
+            margin-bottom: 15px;
+        }
+        
+        .page-header p {
+            font-size: 1.3rem;
+            color: var(--gray);
+        }
+        
+        .achievements-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .achievement-stat {
+            background: white;
+            padding: 25px 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+        
+        .achievement-stat-value {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+        
+        .achievement-stat-label {
+            font-size: 1.1rem;
+            color: var(--gray);
+            margin-top: 10px;
+        }
+        
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+        
+        .achievement-card {
+            background: white;
+            border-radius: 25px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+            border: 3px solid transparent;
+            position: relative;
+        }
+        
+        .achievement-card.unlocked {
+            border-color: var(--mint);
+            animation: pulse 2s infinite;
+        }
+        
+        .achievement-card.locked {
+            opacity: 0.6;
+            filter: grayscale(100%);
+        }
+        
+        .achievement-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .achievement-badge {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+        
+        .achievement-title {
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .achievement-description {
+            color: var(--gray);
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        
+        .achievement-reward {
+            background: var(--gradient-ocean);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        .achievement-locked {
+            color: var(--gray);
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+        
+        .unlock-animation {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8rem;
+            animation: unlock 1s ease-in-out;
+        }
+        
+        @keyframes unlock {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="achievements-container">
+        <button class="btn btn-secondary" onclick="location.href='dashboard.php'">
+            <span class="btn-icon">←</span>
+            Back to Dashboard
+        </button>
+        
+        <div class="page-header">
+            <h1>🏆 Your Achievements</h1>
+            <p>Unlock badges by completing challenges!</p>
+        </div>
+        
+        <div class="achievements-stats">
+            <div class="achievement-stat">
+                <div class="achievement-stat-value" id="unlockedCount">0</div>
+                <div class="achievement-stat-label">Unlocked</div>
+            </div>
+            <div class="achievement-stat">
+                <div class="achievement-stat-value" id="totalCount">15</div>
+                <div class="achievement-stat-label">Total Badges</div>
+            </div>
+            <div class="achievement-stat">
+                <div class="achievement-stat-value" id="progressPercent">0%</div>
+                <div class="achievement-stat-label">Progress</div>
+            </div>
+        </div>
+        
+        <div class="achievements-grid" id="achievementsGrid"></div>
+    </div>
+
+    <script src="js/celebrations.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script>
+        const achievements = [
+            {
+                id: 'first_steps',
+                badge: '🎯',
+                title: 'First Steps',
+                description: 'Complete your first activity',
+                reward: '+50 XP',
+                requirement: { type: 'activities', count: 1 }
+            },
+            {
+                id: 'quick_learner',
+                badge: '⚡',
+                title: 'Quick Learner',
+                description: 'Complete 10 activities',
+                reward: '+100 XP',
+                requirement: { type: 'activities', count: 10 }
+            },
+            {
+                id: 'reading_star',
+                badge: '📚',
+                title: 'Reading Star',
+                description: 'Read all 3 stories',
+                reward: '+75 XP',
+                requirement: { type: 'stories', count: 3 }
+            },
+            {
+                id: 'quiz_master',
+                badge: '🧠',
+                title: 'Quiz Master',
+                description: 'Complete 5 quizzes',
+                reward: '+100 XP',
+                requirement: { type: 'quizzes', count: 5 }
+            },
+            {
+                id: 'game_champion',
+                badge: '🎮',
+                title: 'Game Champion',
+                description: 'Play all 5 games',
+                reward: '+125 XP',
+                requirement: { type: 'games', count: 5 }
+            },
+            {
+                id: 'perfect_score',
+                badge: '💯',
+                title: 'Perfect Score',
+                description: 'Get 100% on any quiz',
+                reward: '+150 XP',
+                requirement: { type: 'perfect', count: 1 }
+            },
+            {
+                id: 'week_warrior',
+                badge: '🔥',
+                title: 'Week Warrior',
+                description: 'Maintain a 7-day streak',
+                reward: '+200 XP',
+                requirement: { type: 'streak', count: 7 }
+            },
+            {
+                id: 'knowledge_seeker',
+                badge: '🎓',
+                title: 'Knowledge Seeker',
+                description: 'Earn 500 total XP',
+                reward: '+100 XP',
+                requirement: { type: 'xp', count: 500 }
+            },
+            {
+                id: 'coin_collector',
+                badge: '💰',
+                title: 'Coin Collector',
+                description: 'Collect 200 coins',
+                reward: '+75 XP',
+                requirement: { type: 'coins', count: 200 }
+            },
+            {
+                id: 'early_bird',
+                badge: '🌅',
+                title: 'Early Bird',
+                description: 'Complete an activity before 8 AM',
+                reward: '+50 XP',
+                requirement: { type: 'time', value: 'morning' }
+            },
+            {
+                id: 'night_owl',
+                badge: '🌙',
+                title: 'Night Owl',
+                description: 'Complete an activity after 8 PM',
+                reward: '+50 XP',
+                requirement: { type: 'time', value: 'night' }
+            },
+            {
+                id: 'speed_demon',
+                badge: '⚡',
+                title: 'Speed Demon',
+                description: 'Complete Math Dash with 150+ score',
+                reward: '+100 XP',
+                requirement: { type: 'game_score', game: 'math', score: 150 }
+            },
+            {
+                id: 'memory_master',
+                badge: '🧩',
+                title: 'Memory Master',
+                description: 'Complete Memory Match in under 60 seconds',
+                reward: '+100 XP',
+                requirement: { type: 'game_time', game: 'memory', time: 60 }
+            },
+            {
+                id: 'word_wizard',
+                badge: '📝',
+                title: 'Word Wizard',
+                description: 'Build 10 words correctly',
+                reward: '+125 XP',
+                requirement: { type: 'words', count: 10 }
+            },
+            {
+                id: 'legendary_learner',
+                badge: '👑',
+                title: 'Legendary Learner',
+                description: 'Reach Level 10',
+                reward: '+500 XP',
+                requirement: { type: 'level', count: 10 }
+            }
+        ];
+        
+        // Check authentication
+        window.addEventListener('DOMContentLoaded', () => {
+            const sessionData = localStorage.getItem('brightMindsSession');
+            if (!sessionData) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            loadAchievements();
+        });
+        
+        function loadAchievements() {
+            // Get user data
+            const sessionData = localStorage.getItem('brightMindsSession');
+            const userData = JSON.parse(sessionData);
+
+            // Get achievements progress from localStorage
+            let unlockedAchievements = JSON.parse(localStorage.getItem('unlockedAchievements') || '[]');
+            let newlyUnlocked = [];
+
+            // Auto-unlock based on current stats
+            achievements.forEach(achievement => {
+                if (!unlockedAchievements.includes(achievement.id)) {
+                    if (checkAchievement(achievement, userData)) {
+                        unlockedAchievements.push(achievement.id);
+                        newlyUnlocked.push(achievement);
+                    }
+                }
+            });
+
+            // Save updated achievements
+            localStorage.setItem('unlockedAchievements', JSON.stringify(unlockedAchievements));
+
+            // Show celebration for newly unlocked achievements
+            if (newlyUnlocked.length > 0 && window.Celebrations) {
+                setTimeout(() => {
+                    newlyUnlocked.forEach((achievement, index) => {
+                        setTimeout(() => {
+                            Celebrations.showAchievementUnlock(achievement);
+                        }, index * 2000);
+                    });
+                }, 500);
+            }
+            
+            // Update stats
+            document.getElementById('unlockedCount').textContent = unlockedAchievements.length;
+            document.getElementById('progressPercent').textContent = 
+                Math.round((unlockedAchievements.length / achievements.length) * 100) + '%';
+            
+            // Render achievements
+            const grid = document.getElementById('achievementsGrid');
+            grid.innerHTML = achievements.map(achievement => {
+                const isUnlocked = unlockedAchievements.includes(achievement.id);
+                const statusClass = isUnlocked ? 'unlocked' : 'locked';
+                
+                return `
+                    <div class="achievement-card ${statusClass}">
+                        <div class="achievement-badge">${achievement.badge}</div>
+                        <div class="achievement-title">${achievement.title}</div>
+                        <div class="achievement-description">${achievement.description}</div>
+                        ${isUnlocked ? 
+                            `<div class="achievement-reward">✓ Unlocked!</div>` : 
+                            `<div class="achievement-locked">🔒 Locked<br>Keep playing to unlock!</div>`
+                        }
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function checkAchievement(achievement, userData) {
+            const req = achievement.requirement;
+            
+            switch(req.type) {
+                case 'xp':
+                    return (userData.xp || 0) >= req.count;
+                case 'level':
+                    return (userData.level || 1) >= req.count;
+                case 'coins':
+                    return (userData.coins || 0) >= req.count;
+                case 'streak':
+                    return (userData.streak || 0) >= req.count;
+                default:
+                    return false;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Builder - Bright Minds</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        .game-container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: var(--shadow-xl);
+            text-align: center;
+        }
+        
+        .game-title {
+            font-size: 2.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 30px;
+        }
+        
+        .game-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .stat {
+            background: var(--cream);
+            padding: 15px 30px;
+            border-radius: 15px;
+            border: 3px solid var(--primary-blue);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+        
+        .word-display {
+            font-size: 3rem;
+            letter-spacing: 15px;
+            margin: 40px 0;
+            color: var(--primary-blue);
+            font-weight: bold;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .letters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 15px;
+            max-width: 600px;
+            margin: 40px auto;
+        }
+        
+        .letter-btn {
+            font-size: 2rem;
+            padding: 20px;
+            background: var(--gradient-ocean);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all var(--transition-normal);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .letter-btn:hover:not(:disabled) {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .letter-btn:disabled {
+            background: var(--light-gray);
+            color: var(--gray);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        .hint-box {
+            background: var(--sky-blue);
+            padding: 25px;
+            border-radius: 20px;
+            margin: 30px 0;
+            font-size: 1.3rem;
+            color: var(--dark-gray);
+        }
+        
+        .feedback {
+            font-size: 2.5rem;
+            margin: 20px 0;
+            min-height: 50px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .game-complete {
+            display: none;
+            padding: 40px;
+            background: var(--gradient-ocean);
+            color: white;
+            border-radius: 25px;
+            margin-top: 30px;
+        }
+        
+        .game-complete.show {
+            display: block;
+            animation: slideInUp 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="game-container">
+        <h1 class="game-title">📝 Word Builder</h1>
+        
+        <div class="game-stats">
+            <div class="stat">
+                <div class="stat-label">Score</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Words</div>
+                <div class="stat-value" id="wordCount">0/10</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Streak</div>
+                <div class="stat-value" id="streak">0</div>
+            </div>
+        </div>
+        
+        <div id="gameArea">
+            <div class="hint-box" id="hintBox">Get ready to build words!</div>
+            
+            <div class="word-display" id="wordDisplay">_ _ _ _</div>
+            
+            <div class="letters-grid" id="lettersGrid"></div>
+            
+            <div class="feedback" id="feedback"></div>
+            
+            <button class="btn btn-warning btn-large" onclick="skipWord()" id="skipBtn" style="display: none; margin-top: 20px;">
+                <span class="btn-icon">⏭️</span>
+                Skip Word
+            </button>
+            
+            <button class="btn btn-primary btn-large" onclick="startGame()" id="startBtn">
+                <span class="btn-icon">🚀</span>
+                Start Game
+            </button>
+            
+            <button class="btn btn-secondary btn-large" onclick="location.href='../dashboard.html'">
+                <span class="btn-icon">🏠</span>
+                Dashboard
+            </button>
+        </div>
+        
+        <div class="game-complete" id="gameComplete">
+            <h2>🎉 Amazing Work!</h2>
+            <p id="finalScore"></p>
+            <p id="rewardInfo"></p>
+            <button class="btn btn-success btn-large" onclick="location.href='../dashboard.html'" style="margin-top: 20px;">
+                Continue to Dashboard
+            </button>
+            <button class="btn btn-warning btn-large" onclick="resetGame()" style="margin-top: 20px;">
+                Play Again
+            </button>
+        </div>
+    </div>
+    
+    <script src="../js/dashboard.js"></script>
+    <script>
+        const words = [
+            { word: 'ELEPHANT', hint: 'A large animal with a trunk', points: 40 },
+            { word: 'RAINBOW', hint: 'Colorful arc in the sky after rain', points: 35 },
+            { word: 'BUTTERFLY', hint: 'Beautiful insect with colorful wings', points: 45 },
+            { word: 'SUNSHINE', hint: 'Bright light from the sun', points: 40 },
+            { word: 'OCEAN', hint: 'Large body of salt water', points: 25 },
+            { word: 'MOUNTAIN', hint: 'Very tall natural land formation', points: 40 },
+            { word: 'FRIEND', hint: 'Someone you like and trust', points: 30 },
+            { word: 'SMILE', hint: 'Happy expression on your face', points: 25 },
+            { word: 'STAR', hint: 'Bright object in the night sky', points: 20 },
+            { word: 'FLOWER', hint: 'Pretty plant with petals', points: 30 },
+            { word: 'DRAGON', hint: 'Mythical fire-breathing creature', points: 30 },
+            { word: 'CASTLE', hint: 'Large building where royalty lives', points: 30 },
+            { word: 'PLANET', hint: 'Large object orbiting a star', points: 30 },
+            { word: 'WIZARD', hint: 'Person who does magic', points: 30 }
+        ];
+        
+        let currentWord = null;
+        let currentAnswer = [];
+        let score = 0;
+        let wordsCompleted = 0;
+        let streak = 0;
+        let usedWords = [];
+        let gameActive = false;
+        
+        function startGame() {
+            score = 0;
+            wordsCompleted = 0;
+            streak = 0;
+            usedWords = [];
+            gameActive = true;
+            
+            document.getElementById('score').textContent = '0';
+            document.getElementById('wordCount').textContent = '0/10';
+            document.getElementById('streak').textContent = '0';
+            document.getElementById('gameComplete').classList.remove('show');
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('skipBtn').style.display = 'inline-flex';
+            
+            loadNewWord();
+        }
+        
+        function loadNewWord() {
+            document.getElementById('feedback').textContent = '';
+            
+            // Get unused word
+            const availableWords = words.filter(w => !usedWords.includes(w.word));
+            if (availableWords.length === 0 || wordsCompleted >= 10) {
+                endGame();
+                return;
+            }
+            
+            currentWord = availableWords[Math.floor(Math.random() * availableWords.length)];
+            usedWords.push(currentWord.word);
+            currentAnswer = [];
+            
+            // Show hint
+            document.getElementById('hintBox').textContent = '💡 Hint: ' + currentWord.hint;
+            
+            // Show blank spaces
+            updateWordDisplay();
+            
+            // Create letter buttons
+            createLetterButtons();
+        }
+        
+        function updateWordDisplay() {
+            const display = document.getElementById('wordDisplay');
+            let displayText = '';
+            
+            for (let i = 0; i < currentWord.word.length; i++) {
+                if (currentAnswer[i]) {
+                    displayText += currentAnswer[i] + ' ';
+                } else {
+                    displayText += '_ ';
+                }
+            }
+            
+            display.textContent = displayText.trim();
+        }
+        
+        function createLetterButtons() {
+            const grid = document.getElementById('lettersGrid');
+            grid.innerHTML = '';
+            
+            // Get letters from word and add some extras
+            const wordLetters = currentWord.word.split('');
+            const extraLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+                .split('')
+                .filter(l => !wordLetters.includes(l))
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 4);
+            
+            const allLetters = [...wordLetters, ...extraLetters]
+                .sort(() => Math.random() - 0.5);
+            
+            allLetters.forEach(letter => {
+                const btn = document.createElement('button');
+                btn.className = 'letter-btn';
+                btn.textContent = letter;
+                btn.onclick = () => selectLetter(letter, btn);
+                grid.appendChild(btn);
+            });
+        }
+        
+        function selectLetter(letter, btn) {
+            if (!gameActive) return;
+            
+            // Find next empty position
+            const nextPos = currentAnswer.length;
+            
+            if (nextPos < currentWord.word.length) {
+                currentAnswer.push(letter);
+                btn.disabled = true;
+                updateWordDisplay();
+                
+                // Check if word is complete
+                if (currentAnswer.length === currentWord.word.length) {
+                    checkWord();
+                }
+            }
+        }
+        
+        function checkWord() {
+            const userWord = currentAnswer.join('');
+            const feedback = document.getElementById('feedback');
+            
+            if (userWord === currentWord.word) {
+                // Correct!
+                feedback.textContent = '✓ Perfect! ' + currentWord.word;
+                feedback.style.color = 'var(--mint)';
+                
+                score += currentWord.points + (streak * 5);
+                wordsCompleted++;
+                streak++;
+                
+                document.getElementById('score').textContent = score;
+                document.getElementById('wordCount').textContent = wordsCompleted + '/10';
+                document.getElementById('streak').textContent = streak;
+                
+                setTimeout(() => {
+                    loadNewWord();
+                }, 2000);
+            } else {
+                // Wrong!
+                feedback.textContent = '✗ Try again!';
+                feedback.style.color = 'var(--coral)';
+                streak = 0;
+                document.getElementById('streak').textContent = '0';
+                
+                setTimeout(() => {
+                    currentAnswer = [];
+                    updateWordDisplay();
+                    createLetterButtons();
+                    feedback.textContent = '';
+                }, 1500);
+            }
+        }
+        
+        function skipWord() {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = '⏭️ Skipped! The word was: ' + currentWord.word;
+            feedback.style.color = 'var(--sunshine)';
+            
+            streak = 0;
+            document.getElementById('streak').textContent = '0';
+            
+            setTimeout(() => {
+                loadNewWord();
+            }, 2000);
+        }
+        
+        function endGame() {
+            gameActive = false;
+            document.getElementById('skipBtn').style.display = 'none';
+            
+            // Calculate rewards
+            let xpReward = score * 2;
+            let coinReward = Math.floor(score / 4);
+            
+            // Bonus for completion
+            if (wordsCompleted >= 10) {
+                xpReward += 50;
+                coinReward += 25;
+            } else if (wordsCompleted >= 7) {
+                xpReward += 25;
+                coinReward += 10;
+            }
+            
+            document.getElementById('finalScore').textContent = 
+                `You completed ${wordsCompleted} words with ${score} points!`;
+            document.getElementById('rewardInfo').textContent = 
+                `Earned: ${xpReward} XP and ${coinReward} Coins!`;
+            document.getElementById('gameComplete').classList.add('show');
+            
+            // Award rewards
+            if (typeof awardXP === 'function') {
+                setTimeout(() => {
+                    awardXP(xpReward, coinReward);
+                }, 1000);
+            }
+        }
+        
+        function resetGame() {
+            document.getElementById('gameComplete').classList.remove('show');
+            document.getElementById('startBtn').style.display = 'inline-flex';
+            document.getElementById('hintBox').textContent = 'Get ready to build words!';
+            document.getElementById('wordDisplay').textContent = '_ _ _ _';
+            document.getElementById('lettersGrid').innerHTML = '';
+            document.getElementById('feedback').textContent = '';
+        }
+    </script>
+</body>
+</html>

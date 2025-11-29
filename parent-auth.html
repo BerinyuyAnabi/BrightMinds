@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Access - Bright Minds</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <style>
+        .parent-branding {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .parent-branding h1 {
+            font-size: 2.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 10px;
+        }
+        
+        .parent-branding p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        
+        .parent-benefits {
+            background: var(--cream);
+            padding: 30px;
+            border-radius: 20px;
+            margin: 30px 0;
+        }
+        
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .benefit-item:last-child {
+            border-bottom: none;
+        }
+        
+        .benefit-icon {
+            font-size: 2rem;
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-ocean);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .benefit-text {
+            flex: 1;
+        }
+        
+        .benefit-text h4 {
+            color: var(--primary-blue);
+            margin-bottom: 5px;
+        }
+        
+        .benefit-text p {
+            color: var(--gray);
+            font-size: 0.95rem;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="container">
+        <!-- Parent Login/Signup Toggle -->
+        <section class="auth-form" id="parentAuthForm">
+            <button class="btn-back" onclick="location.href='index.html'">
+                <span>←</span> Back to Child Login
+            </button>
+            
+            <div class="parent-branding">
+                <h1>👤 Parent Dashboard</h1>
+                <p>Monitor your child's learning journey</p>
+            </div>
+            
+            <!-- Login/Signup Tabs -->
+            <div style="display: flex; gap: 10px; margin-bottom: 30px;">
+                <button class="btn btn-primary" onclick="showParentLogin()" id="btnShowLogin" style="flex: 1;">
+                    Login
+                </button>
+                <button class="btn btn-secondary" onclick="showParentSignup()" id="btnShowSignup" style="flex: 1;">
+                    Sign Up
+                </button>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="parentLoginForm">
+                <div class="form-field">
+                    <label for="parentLoginEmail">
+                        <span class="label-icon">📧</span>
+                        Email Address
+                    </label>
+                    <input type="email" id="parentLoginEmail" required placeholder="your.email@example.com">
+                </div>
+                
+                <div class="form-field">
+                    <label for="parentLoginPassword">
+                        <span class="label-icon">🔒</span>
+                        Password
+                    </label>
+                    <input type="password" id="parentLoginPassword" required placeholder="Enter your password">
+                </div>
+                
+                <div class="form-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="parentRememberMe">
+                        <span>Remember me</span>
+                    </label>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-large">
+                        <span class="btn-icon">🚀</span>
+                        Access Dashboard
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Signup Form -->
+            <form id="parentSignupForm" class="hidden">
+                <div class="form-field">
+                    <label for="parentSignupName">
+                        <span class="label-icon">👤</span>
+                        Full Name
+                    </label>
+                    <input type="text" id="parentSignupName" required placeholder="John Smith">
+                </div>
+                
+                <div class="form-field">
+                    <label for="parentSignupEmail">
+                        <span class="label-icon">📧</span>
+                        Email Address
+                    </label>
+                    <input type="email" id="parentSignupEmail" required placeholder="your.email@example.com">
+                </div>
+                
+                <div class="form-field">
+                    <label for="parentSignupPassword">
+                        <span class="label-icon">🔒</span>
+                        Create Password
+                    </label>
+                    <input type="password" id="parentSignupPassword" required placeholder="Create a strong password">
+                    <div class="password-strength">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="parentStrengthFill"></div>
+                        </div>
+                        <div class="strength-text" id="parentStrengthText"></div>
+                    </div>
+                </div>
+                
+                <div class="form-field">
+                    <label for="parentSignupConfirm">
+                        <span class="label-icon">🔒</span>
+                        Confirm Password
+                    </label>
+                    <input type="password" id="parentSignupConfirm" required placeholder="Re-enter your password">
+                </div>
+                
+                <div class="parent-benefits">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 20px;">Parent Dashboard Features:</h3>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">📊</div>
+                        <div class="benefit-text">
+                            <h4>Progress Tracking</h4>
+                            <p>Monitor activities, XP, and achievements in real-time</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">📈</div>
+                        <div class="benefit-text">
+                            <h4>Detailed Reports</h4>
+                            <p>View comprehensive weekly and monthly reports</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">🎯</div>
+                        <div class="benefit-text">
+                            <h4>Set Goals</h4>
+                            <p>Create learning goals and track progress</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">🔔</div>
+                        <div class="benefit-text">
+                            <h4>Smart Notifications</h4>
+                            <p>Get alerts for achievements and milestones</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="parentAgreeTerms" required>
+                        <span>I agree to the Terms of Service and Privacy Policy</span>
+                    </label>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-large">
+                        <span class="btn-icon">✨</span>
+                        Create Parent Account
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div class="toast hidden" id="toast">
+        <span class="toast-icon">✔</span>
+        <span class="toast-message"></span>
+    </div>
+    
+    <script>
+        // Show parent login form
+        function showParentLogin() {
+            document.getElementById('parentLoginForm').classList.remove('hidden');
+            document.getElementById('parentSignupForm').classList.add('hidden');
+            document.getElementById('btnShowLogin').classList.remove('btn-secondary');
+            document.getElementById('btnShowLogin').classList.add('btn-primary');
+            document.getElementById('btnShowSignup').classList.remove('btn-primary');
+            document.getElementById('btnShowSignup').classList.add('btn-secondary');
+        }
+        
+        // Show parent signup form
+        function showParentSignup() {
+            document.getElementById('parentLoginForm').classList.add('hidden');
+            document.getElementById('parentSignupForm').classList.remove('hidden');
+            document.getElementById('btnShowSignup').classList.remove('btn-secondary');
+            document.getElementById('btnShowSignup').classList.add('btn-primary');
+            document.getElementById('btnShowLogin').classList.remove('btn-primary');
+            document.getElementById('btnShowLogin').classList.add('btn-secondary');
+        }
+        
+        // Handle parent login
+        document.getElementById('parentLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('parentLoginEmail').value.trim();
+            const password = document.getElementById('parentLoginPassword').value;
+            const rememberMe = document.getElementById('parentRememberMe')?.checked || false;
+            
+            if (!email || !password) {
+                showToast('Please enter email and password', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('api/auth.php?action=login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: email,
+                        password: password,
+                        rememberMe: rememberMe
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.user) {
+                    // Verify user is a parent
+                    if (data.user.role !== 'parent') {
+                        showToast('This account is not a parent account', 'error');
+                        return;
+                    }
+                    
+                    // Store user data in localStorage for client-side use
+                    localStorage.setItem('brightMindsSession', JSON.stringify({
+                        userId: data.user.userId,
+                        username: data.user.username,
+                        displayName: data.user.displayName,
+                        email: data.user.email,
+                        role: data.user.role
+                    }));
+                    
+                    showToast('Welcome back! Redirecting to dashboard...', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'parent-dashboard.php';
+                    }, 1500);
+                } else {
+                    showToast(data.message || 'Login failed. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showToast('An error occurred. Please try again.', 'error');
+            }
+        });
+        
+        // Handle parent signup
+        document.getElementById('parentSignupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('parentSignupName').value.trim();
+            const email = document.getElementById('parentSignupEmail').value.trim();
+            const password = document.getElementById('parentSignupPassword').value;
+            const confirm = document.getElementById('parentSignupConfirm').value;
+            
+            // Validate passwords match
+            if (password !== confirm) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
+            
+            if (!name || !email || !password) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            try {
+                // Generate username from email
+                const username = email.split('@')[0];
+                
+                const response = await fetch('api/auth.php?action=register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        email: email,
+                        password: password,
+                        displayName: name,
+                        role: 'parent'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Store user data in localStorage for client-side use
+                    localStorage.setItem('brightMindsSession', JSON.stringify({
+                        userId: data.userId,
+                        username: data.user?.username || username,
+                        displayName: data.user?.displayName || name,
+                        email: data.user?.email || email,
+                        role: data.role || 'parent'
+                    }));
+                    
+                    showToast('Account created! Redirecting to dashboard...', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'parent-dashboard.php';
+                    }, 1500);
+                } else {
+                    showToast(data.message || 'Registration failed. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showToast('An error occurred. Please try again.', 'error');
+            }
+        });
+        
+        // Password strength checker
+        document.getElementById('parentSignupPassword').addEventListener('input', (e) => {
+            const password = e.target.value;
+            const strengthFill = document.getElementById('parentStrengthFill');
+            const strengthText = document.getElementById('parentStrengthText');
+            
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^a-zA-Z\d]/.test(password)) strength++;
+            
+            strengthFill.className = 'strength-fill';
+            if (strength === 0) {
+                strengthFill.classList.add('weak');
+                strengthText.textContent = '';
+            } else if (strength <= 2) {
+                strengthFill.classList.add('weak');
+                strengthText.textContent = 'Weak password';
+                strengthText.style.color = 'var(--coral)';
+            } else if (strength === 3) {
+                strengthFill.classList.add('medium');
+                strengthText.textContent = 'Medium password';
+                strengthText.style.color = 'var(--sunshine)';
+            } else {
+                strengthFill.classList.add('strong');
+                strengthText.textContent = 'Strong password! ✔';
+                strengthText.style.color = 'var(--mint)';
+            }
+        });
+        
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = toast.querySelector('.toast-message');
+            
+            toastMessage.textContent = message;
+            
+            toast.className = 'toast';
+            if (type === 'error') {
+                toast.classList.add('toast-error');
+            } else if (type === 'warning') {
+                toast.classList.add('toast-warning');
+            }
+            
+            toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+        
+        // Check if already logged in via API
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('api/auth.php?action=verify');
+                const data = await response.json();
+                
+                if (data.success && data.user && data.user.role === 'parent') {
+                    window.location.href = 'parent-dashboard.php';
+                }
+            } catch (error) {
+                // If verification fails, user is not logged in - stay on auth page
+                console.log('No active session');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Dash - Bright Minds</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        .game-container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: var(--shadow-xl);
+            text-align: center;
+        }
+        
+        .game-title {
+            font-size: 2.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 30px;
+        }
+        
+        .game-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .stat {
+            background: var(--cream);
+            padding: 15px 30px;
+            border-radius: 15px;
+            border: 3px solid var(--primary-blue);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+        
+        .question-card {
+            background: var(--sky-blue);
+            padding: 50px;
+            border-radius: 25px;
+            margin: 30px 0;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .question {
+            font-size: 4rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 30px;
+        }
+        
+        .answer-input {
+            font-size: 3rem;
+            padding: 20px 40px;
+            border: 4px solid var(--primary-blue);
+            border-radius: 20px;
+            text-align: center;
+            width: 300px;
+            max-width: 90%;
+            font-family: inherit;
+            background: white;
+        }
+        
+        .answer-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 5px rgba(14, 165, 233, 0.2);
+        }
+        
+        .feedback {
+            font-size: 3rem;
+            margin: 20px 0;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .feedback.correct {
+            color: var(--mint);
+        }
+        
+        .feedback.wrong {
+            color: var(--coral);
+            animation: shake 0.5s ease;
+        }
+        
+        .game-complete {
+            display: none;
+            padding: 40px;
+            background: var(--gradient-ocean);
+            color: white;
+            border-radius: 25px;
+            margin-top: 30px;
+        }
+        
+        .game-complete.show {
+            display: block;
+            animation: slideInUp 0.5s ease;
+        }
+        
+        .game-complete h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .question {
+                font-size: 3rem;
+            }
+            
+            .answer-input {
+                font-size: 2rem;
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="game-container">
+        <h1 class="game-title">➕ Math Dash</h1>
+        
+        <div class="game-stats">
+            <div class="stat">
+                <div class="stat-label">Score</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Time</div>
+                <div class="stat-value" id="timer">60</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Streak</div>
+                <div class="stat-value" id="streak">0</div>
+            </div>
+        </div>
+        
+        <div id="gameArea">
+            <div class="question-card">
+                <div class="question" id="question">Ready?</div>
+                <input type="number" class="answer-input" id="answerInput" 
+                       placeholder="?" autocomplete="off" disabled>
+                <div class="feedback" id="feedback"></div>
+            </div>
+            
+            <button class="btn btn-primary btn-large" onclick="startGame()" id="startBtn">
+                <span class="btn-icon">🚀</span>
+                Start Game
+            </button>
+            
+            <button class="btn btn-secondary btn-large" onclick="location.href='../dashboard.html'">
+                <span class="btn-icon">🏠</span>
+                Dashboard
+            </button>
+        </div>
+        
+        <div class="game-complete" id="gameComplete">
+            <h2>⏰ Time's Up!</h2>
+            <p id="finalScore"></p>
+            <p id="rewardInfo"></p>
+            <button class="btn btn-success btn-large" onclick="location.href='../dashboard.html'" style="margin-top: 20px;">
+                Continue to Dashboard
+            </button>
+            <button class="btn btn-warning btn-large" onclick="resetGame()" style="margin-top: 20px;">
+                Play Again
+            </button>
+        </div>
+    </div>
+    
+    <script src="../js/dashboard.js"></script>
+    <script>
+        let score = 0;
+        let streak = 0;
+        let timeLeft = 60;
+        let currentAnswer = 0;
+        let gameActive = false;
+        let timerInterval = null;
+        
+        const answerInput = document.getElementById('answerInput');
+        const questionEl = document.getElementById('question');
+        const feedbackEl = document.getElementById('feedback');
+        
+        // Start game
+        function startGame() {
+            score = 0;
+            streak = 0;
+            timeLeft = 60;
+            gameActive = true;
+            
+            document.getElementById('score').textContent = '0';
+            document.getElementById('streak').textContent = '0';
+            document.getElementById('gameComplete').classList.remove('show');
+            document.getElementById('startBtn').style.display = 'none';
+            
+            answerInput.disabled = false;
+            answerInput.value = '';
+            answerInput.focus();
+            
+            generateQuestion();
+            startTimer();
+            
+            // Listen for enter key
+            answerInput.addEventListener('keypress', handleAnswer);
+        }
+        
+        // Generate math question
+        function generateQuestion() {
+            feedbackEl.textContent = '';
+            answerInput.value = '';
+            
+            const operations = ['+', '-', '×'];
+            const operation = operations[Math.floor(Math.random() * operations.length)];
+            
+            let num1, num2;
+            
+            if (operation === '+') {
+                num1 = Math.floor(Math.random() * 50) + 1;
+                num2 = Math.floor(Math.random() * 50) + 1;
+                currentAnswer = num1 + num2;
+            } else if (operation === '-') {
+                num1 = Math.floor(Math.random() * 50) + 20;
+                num2 = Math.floor(Math.random() * (num1 - 1)) + 1;
+                currentAnswer = num1 - num2;
+            } else { // multiplication
+                num1 = Math.floor(Math.random() * 12) + 1;
+                num2 = Math.floor(Math.random() * 12) + 1;
+                currentAnswer = num1 * num2;
+            }
+            
+            questionEl.textContent = `${num1} ${operation} ${num2} = ?`;
+        }
+        
+        // Handle answer submission
+        function handleAnswer(e) {
+            if (e.key !== 'Enter') return;
+            if (!gameActive) return;
+            
+            const userAnswer = parseInt(answerInput.value);
+            
+            if (userAnswer === currentAnswer) {
+                // Correct answer
+                feedbackEl.textContent = '✓ Correct!';
+                feedbackEl.className = 'feedback correct';
+                
+                streak++;
+                score += (10 + streak * 2);
+                
+                document.getElementById('score').textContent = score;
+                document.getElementById('streak').textContent = streak;
+                
+                setTimeout(() => {
+                    generateQuestion();
+                }, 800);
+            } else {
+                // Wrong answer
+                feedbackEl.textContent = '✗ Try again!';
+                feedbackEl.className = 'feedback wrong';
+                streak = 0;
+                document.getElementById('streak').textContent = '0';
+                answerInput.value = '';
+            }
+        }
+        
+        // Start timer
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                
+                // Change color when time is low
+                const timerEl = document.getElementById('timer');
+                if (timeLeft <= 10) {
+                    timerEl.style.color = 'var(--coral)';
+                    timerEl.style.animation = 'pulse 0.5s infinite';
+                } else if (timeLeft <= 30) {
+                    timerEl.style.color = 'var(--sunshine)';
+                }
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+        
+        // End game
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            answerInput.disabled = true;
+            
+            // Calculate rewards
+            let xpReward = Math.floor(score * 1.5);
+            let coinReward = Math.floor(score / 5);
+            
+            // Bonus for high score
+            if (score >= 200) {
+                xpReward += 50;
+                coinReward += 25;
+            } else if (score >= 100) {
+                xpReward += 25;
+                coinReward += 10;
+            }
+            
+            document.getElementById('finalScore').textContent = 
+                `Final Score: ${score} points`;
+            document.getElementById('rewardInfo').textContent = 
+                `Earned: ${xpReward} XP and ${coinReward} Coins!`;
+            document.getElementById('gameComplete').classList.add('show');
+            
+            // Award rewards
+            if (typeof awardXP === 'function') {
+                setTimeout(() => {
+                    awardXP(xpReward, coinReward);
+                }, 1000);
+            }
+        }
+        
+        // Reset game
+        function resetGame() {
+            document.getElementById('gameComplete').classList.remove('show');
+            document.getElementById('startBtn').style.display = 'inline-flex';
+            questionEl.textContent = 'Ready?';
+            feedbackEl.textContent = '';
+            document.getElementById('timer').style.color = 'var(--primary-blue)';
+            document.getElementById('timer').style.animation = 'none';
+        }
+    </script>
+</body>
+</html>

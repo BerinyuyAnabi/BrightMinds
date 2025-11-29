@@ -1,0 +1,333 @@
+<?php
+/**
+ * Bright Minds Learning Platform
+ * Configuration File
+ * 
+ * This file contains database and application settings
+ */
+
+// Start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Error reporting (set to 0 in production)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// ========================================
+// DATABASE CONFIGURATION
+// ========================================
+define('DB_HOST', 'localhost');
+define('DB_PORT', 3306);
+define('DB_USER', 'root');
+define('DB_PASS', '');  // Set your MySQL password here
+define('DB_NAME', 'bright_minds_db');
+
+// ========================================
+// APPLICATION SETTINGS
+// ========================================
+define('APP_NAME', 'Bright Minds');
+define('APP_VERSION', '2.0');
+define('BASE_URL', 'http://localhost/bright-minds-complete/');
+define('TIMEZONE', 'UTC');
+
+// Set timezone
+date_default_timezone_set(TIMEZONE);
+
+// ========================================
+// SESSION SETTINGS
+// ========================================
+define('SESSION_LIFETIME', 86400); // 24 hours
+define('SESSION_NAME', 'bright_minds_session');
+
+// ========================================
+// GAMIFICATION SETTINGS
+// ========================================
+define('XP_PER_LEVEL', 100);
+define('LEVEL_MULTIPLIER', 1.2);
+define('MAX_STREAK_BONUS', 50);
+
+// ========================================
+// FILE UPLOAD SETTINGS
+// ========================================
+define('UPLOAD_DIR', __DIR__ . '/../uploads/');
+define('MAX_FILE_SIZE', 5242880); // 5MB
+define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif']);
+
+// ========================================
+// SECURITY SETTINGS
+// ========================================
+define('PASSWORD_MIN_LENGTH', 6);
+define('MAX_LOGIN_ATTEMPTS', 5);
+define('LOGIN_TIMEOUT', 300); // 5 minutes
+
+// ========================================
+// DATABASE CONNECTION CLASS
+// ========================================
+class Database {
+    private static $instance = null;
+    private $connection;
+    
+    private function __construct() {
+        try {
+            $this->connection = new mysqli(
+                DB_HOST, 
+                DB_USER, 
+                DB_PASS, 
+                DB_NAME, 
+                DB_PORT
+            );
+            
+            if ($this->connection->connect_error) {
+                throw new Exception('Database connection failed: ' . $this->connection->connect_error);
+            }
+            
+            // Set charset
+            $this->connection->set_charset('utf8mb4');
+            
+        } catch (Exception $e) {
+            $this->logError($e->getMessage());
+            die(json_encode([
+                'success' => false,
+                'message' => 'Database connection failed. Please try again later.'
+            ]));
+        }
+    }
+    
+    public static function getInstance() {
+        if (self::$instance === null) {
+            self::$instance = new Database();
+        }
+        return self::$instance;
+    }
+    
+    public function getConnection() {
+        return $this->connection;
+    }
+    
+    public function query($sql, $params = []) {
+        $stmt = $this->connection->prepare($sql);
+        
+        if (!$stmt) {
+            $this->logError('Query preparation failed: ' . $this->connection->error);
+            return false;
+        }
+        
+        if (!empty($params)) {
+            $types = '';
+            $values = [];
+            
+            foreach ($params as $param) {
+                if (is_int($param)) {
+                    $types .= 'i';
+                } elseif (is_float($param)) {
+                    $types .= 'd';
+                } else {
+                    $types .= 's';
+                }
+                $values[] = $param;
+            }
+            
+            $stmt->bind_param($types, ...$values);
+        }
+        
+        $stmt->execute();
+        return $stmt;
+    }
+    
+    public function select($sql, $params = []) {
+        $stmt = $this->query($sql, $params);
+        if (!$stmt) return [];
+        
+        $result = $stmt->get_result();
+        $data = [];
+        
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
+        
+        $stmt->close();
+        return $data;
+    }
+    
+    public function selectOne($sql, $params = []) {
+        $results = $this->select($sql, $params);
+        return !empty($results) ? $results[0] : null;
+    }
+    
+    public function insert($sql, $params = []) {
+        $stmt = $this->query($sql, $params);
+        if (!$stmt) return false;
+        
+        $insertId = $this->connection->insert_id;
+        $stmt->close();
+        return $insertId;
+    }
+    
+    public function update($sql, $params = []) {
+        $stmt = $this->query($sql, $params);
+        if (!$stmt) return false;
+        
+        $affectedRows = $stmt->affected_rows;
+        $stmt->close();
+        return $affectedRows;
+    }
+    
+    public function delete($sql, $params = []) {
+        return $this->update($sql, $params);
+    }
+    
+    public function escape($string) {
+        return $this->connection->real_escape_string($string);
+    }
+    
+    private function logError($message) {
+        $logDir = __DIR__ . '/../logs';
+        if (!is_dir($logDir)) {
+            @mkdir($logDir, 0755, true);
+        }
+        
+        $logFile = $logDir . '/error_' . date('Y-m-d') . '.log';
+        $entry = '[' . date('Y-m-d H:i:s') . '] ' . $message . "\n";
+        @file_put_contents($logFile, $entry, FILE_APPEND);
+    }
+    
+    public function __destruct() {
+        if ($this->connection) {
+            $this->connection->close();
+        }
+    }
+}
+
+// ========================================
+// HELPER FUNCTIONS
+// ========================================
+
+/**
+ * Get database instance
+ */
+function getDB() {
+    return Database::getInstance();
+}
+
+/**
+ * Hash password securely
+ */
+function hashPassword($password) {
+    return password_hash($password, PASSWORD_BCRYPT);
+}
+
+/**
+ * Verify password
+ */
+function verifyPassword($password, $hash) {
+    return password_verify($password, $hash);
+}
+
+/**
+ * Generate random token
+ */
+function generateToken($length = 32) {
+    return bin2hex(random_bytes($length));
+}
+
+/**
+ * Sanitize input
+ */
+function sanitizeInput($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+    return $data;
+}
+
+/**
+ * Validate email
+ */
+function validateEmail($email) {
+    return filter_var($email, FILTER_VALIDATE_EMAIL);
+}
+
+/**
+ * Send JSON response
+ */
+function jsonResponse($data, $statusCode = 200) {
+    http_response_code($statusCode);
+    header('Content-Type: application/json');
+    echo json_encode($data);
+    exit;
+}
+
+/**
+ * Check if user is logged in
+ */
+function isLoggedIn() {
+    return isset($_SESSION['user_id']) && isset($_SESSION['session_token']);
+}
+
+/**
+ * Get current user ID
+ */
+function getCurrentUserId() {
+    return $_SESSION['user_id'] ?? null;
+}
+
+/**
+ * Get current child ID
+ */
+function getCurrentChildId() {
+    return $_SESSION['child_id'] ?? null;
+}
+
+/**
+ * Require authentication
+ */
+function requireAuth() {
+    if (!isLoggedIn()) {
+        jsonResponse([
+            'success' => false,
+            'message' => 'Authentication required',
+            'redirect' => 'index.html'
+        ], 401);
+    }
+}
+
+/**
+ * Calculate XP needed for level
+ */
+function xpForLevel($level) {
+    return floor(XP_PER_LEVEL * pow(LEVEL_MULTIPLIER, $level - 1));
+}
+
+/**
+ * Calculate level from XP
+ */
+function calculateLevel($xp) {
+    $level = 1;
+    $totalXP = 0;
+    
+    while ($totalXP <= $xp) {
+        $totalXP += xpForLevel($level);
+        if ($totalXP > $xp) break;
+        $level++;
+    }
+    
+    return $level;
+}
+
+/**
+ * Log activity
+ */
+function logActivity($message, $type = 'info') {
+    $logDir = __DIR__ . '/../logs';
+    if (!is_dir($logDir)) {
+        @mkdir($logDir, 0755, true);
+    }
+    
+    $logFile = $logDir . '/' . $type . '_' . date('Y-m-d') . '.log';
+    $entry = '[' . date('Y-m-d H:i:s') . '] ' . $message . "\n";
+    @file_put_contents($logFile, $entry, FILE_APPEND);
+}
+
+?>

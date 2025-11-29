@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Math Quiz - Bright Minds</title>
+    <link rel="stylesheet" href="css/main.css">
+    <style>
+        .quiz-select-container {
+            max-width: 800px;
+            margin: 60px auto;
+            background: white;
+            padding: 50px;
+            border-radius: 30px;
+            box-shadow: var(--shadow-xl);
+            text-align: center;
+        }
+
+        .quiz-select-container h1 {
+            color: var(--primary-blue);
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .quiz-select-container p {
+            color: var(--dark-gray);
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+        }
+
+        .difficulty-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .difficulty-card {
+            background: var(--sky-blue);
+            padding: 30px 20px;
+            border-radius: 20px;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+        }
+
+        .difficulty-card:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .difficulty-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .difficulty-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 10px;
+        }
+
+        .difficulty-desc {
+            color: var(--dark-gray);
+            font-size: 0.95rem;
+        }
+
+        .info-box {
+            background: var(--cream);
+            padding: 20px;
+            border-radius: 15px;
+            border: 3px solid var(--primary-blue);
+            margin: 30px 0;
+        }
+
+        .info-box h3 {
+            color: var(--primary-blue);
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            text-align: left;
+            color: var(--dark-gray);
+            margin-left: 20px;
+        }
+
+        .info-box li {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+
+    <div class="quiz-select-container">
+        <h1>🔢 Dynamic Math Quiz</h1>
+        <p>Every time you play, you'll get brand new questions!</p>
+
+        <div class="info-box">
+            <h3>What's Special About This Quiz?</h3>
+            <ul>
+                <li>✨ <strong>Fresh questions every time</strong> - Never see the same quiz twice!</li>
+                <li>🎯 <strong>Choose your difficulty</strong> - Easy, Medium, or Hard</li>
+                <li>🧮 <strong>Multiple question types</strong> - Addition, subtraction, multiplication, division, and percentages</li>
+                <li>🏆 <strong>Better rewards</strong> - Higher difficulty = More XP and Coins!</li>
+            </ul>
+        </div>
+
+        <h2 style="color: var(--primary-blue); margin-top: 30px;">Select Difficulty Level</h2>
+
+        <div class="difficulty-options">
+            <div class="difficulty-card" onclick="startQuiz('easy')">
+                <div class="difficulty-icon">🌱</div>
+                <div class="difficulty-name">Easy</div>
+                <div class="difficulty-desc">
+                    Numbers 1-20<br>
+                    Perfect for beginners<br>
+                    <strong>+80 XP, +40 Coins</strong>
+                </div>
+            </div>
+
+            <div class="difficulty-card" onclick="startQuiz('medium')">
+                <div class="difficulty-icon">⭐</div>
+                <div class="difficulty-name">Medium</div>
+                <div class="difficulty-desc">
+                    Numbers 1-100<br>
+                    Great challenge<br>
+                    <strong>+100 XP, +50 Coins</strong>
+                </div>
+            </div>
+
+            <div class="difficulty-card" onclick="startQuiz('hard')">
+                <div class="difficulty-icon">🔥</div>
+                <div class="difficulty-name">Hard</div>
+                <div class="difficulty-desc">
+                    Numbers up to 500<br>
+                    Expert level<br>
+                    <strong>+120 XP, +60 Coins</strong>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <button class="btn btn-secondary" onclick="location.href='quiz.html'">
+                <span class="btn-icon">←</span>
+                Back to Quizzes
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const sessionData = localStorage.getItem('brightMindsSession');
+            if (!sessionData) {
+                window.location.href = 'index.html';
+                return;
+            }
+        });
+
+        function startQuiz(difficulty) {
+            // Redirect to quiz-take page with dynamic=true parameter
+            window.location.href = `quiz-take.html?id=2&dynamic=true&difficulty=${difficulty}`;
+        }
+    </script>
+</body>
+</html>

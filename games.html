@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Games - Bright Minds</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/celebrations.css">
+</head>
+<body>
+    <div class="animated-bg"></div>
+    <div class="dashboard">
+        <button class="btn btn-secondary" onclick="location.href='dashboard.php'">
+            <span class="btn-icon">←</span>
+            Back to Dashboard
+        </button>
+        
+        <h1 style="color: var(--primary-blue); margin: 30px 0; font-size: 2.5rem; text-align: center;">
+            🎮 Choose a Game
+        </h1>
+        
+        <div class="activities-grid" id="gamesContainer">
+            <!-- Game 1: Memory Match -->
+            <div class="activity-card" onclick="playGame(1)">
+                <div class="activity-icon">🎴</div>
+                <h3>Memory Match</h3>
+                <p>Test your memory with fun card matching!</p>
+                <div style="margin-top: 15px; color: var(--primary-blue); font-weight: bold;">
+                    <span>⚡ 50+ XP</span> | 
+                    <span>🪙 25+ Coins</span>
+                </div>
+            </div>
+            
+            <!-- Game 2: Math Dash -->
+            <div class="activity-card" onclick="playGame(2)">
+                <div class="activity-icon">➕</div>
+                <h3>Math Dash</h3>
+                <p>Fast-paced arithmetic challenge!</p>
+                <div style="margin-top: 15px; color: var(--primary-blue); font-weight: bold;">
+                    <span>⚡ 60+ XP</span> | 
+                    <span>🪙 30+ Coins</span>
+                </div>
+            </div>
+            
+            <!-- Game 3: Word Builder -->
+            <div class="activity-card" onclick="playGame(3)">
+                <div class="activity-icon">📝</div>
+                <h3>Word Builder</h3>
+                <p>Build words and expand vocabulary!</p>
+                <div style="margin-top: 15px; color: var(--primary-blue); font-weight: bold;">
+                    <span>⚡ 70+ XP</span> | 
+                    <span>🪙 35+ Coins</span>
+                </div>
+            </div>
+            
+            <!-- Game 4: Science Explorer -->
+            <div class="activity-card" onclick="playGame(4)">
+                <div class="activity-icon">🔬</div>
+                <h3>Science Explorer</h3>
+                <p>Discover amazing science facts!</p>
+                <div style="margin-top: 15px; color: var(--primary-blue); font-weight: bold;">
+                    <span>⚡ 75+ XP</span> | 
+                    <span>🪙 38+ Coins</span>
+                </div>
+            </div>
+            
+            <!-- Game 5: Catch the Stars -->
+            <div class="activity-card" onclick="playGame(5)">
+                <div class="activity-icon">⭐</div>
+                <h3>Catch the Stars</h3>
+                <p>Quick reflexes and coordination!</p>
+                <div style="margin-top: 15px; color: var(--primary-blue); font-weight: bold;">
+                    <span>⚡ 65+ XP</span> | 
+                    <span>🪙 32+ Coins</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/celebrations.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script>
+        // Check if user is logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const sessionData = localStorage.getItem('brightMindsSession');
+            if (!sessionData) {
+                window.location.href = 'index.html';
+            }
+        });
+
+        function playGame(gameId) {
+            window.location.href = `games/game${gameId}.html`;
+        }
+    </script>
+</body>
+</html>
