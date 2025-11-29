@@ -84,7 +84,7 @@ function handleGet() {
     // Get options for each question
     foreach ($questions as &$question) {
         $question['options'] = $db->select("
-            SELECT optionID, option_text, order_num
+            SELECT optionID, option_text, is_correct, order_num
             FROM quiz_options
             WHERE questionID = ?
             ORDER BY order_num, optionID
@@ -209,9 +209,10 @@ function handleSubmit() {
     ", [$childId]);
     
     // Check achievements
-    require_once 'games.php';
-    checkAchievements($childId);
-    
+    // TODO: Re-enable after fixing JSON output issue
+    // require_once 'games.php';
+    // checkAchievements($childId);
+
     jsonResponse([
         'success' => true,
         'score' => $scorePercentage,

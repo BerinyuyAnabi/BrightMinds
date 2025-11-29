@@ -38,19 +38,19 @@ async function checkAuth() {
 }
 
 // Load user data
-function loadUserData() {
+async function loadUserData() {
     const sessionData = localStorage.getItem('brightMindsSession');
     if (!sessionData) return;
-    
+
     try {
         const userData = JSON.parse(sessionData);
-        
+
         // Update user name
         const userNameEl = document.getElementById('userName');
         if (userNameEl) {
             userNameEl.textContent = userData.displayName || userData.username;
         }
-        
+
         // Update avatar
         const userAvatarEl = document.getElementById('userAvatar');
         if (userAvatarEl) {
@@ -64,12 +64,32 @@ function loadUserData() {
             };
             userAvatarEl.textContent = avatarEmojis[userData.avatar] || '🦉';
         }
-        
-        // Update stats
-        updateStats(userData);
-        
+
+        // Fetch fresh stats from API
+        await loadStats();
+
     } catch (error) {
         console.error('Error loading user data:', error);
+    }
+}
+
+// Load stats from API
+async function loadStats() {
+    try {
+        const response = await fetch('api/dashboard.php?action=stats');
+        const data = await response.json();
+
+        if (data.success && data.stats) {
+            // Update stats on page
+            updateStats({
+                xp: data.stats.total_xp,
+                level: data.stats.current_level,
+                coins: data.stats.coins,
+                streak: data.stats.streak_days
+            });
+        }
+    } catch (error) {
+        console.error('Error loading stats:', error);
     }
 }
 

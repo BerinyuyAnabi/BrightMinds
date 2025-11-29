@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Take Quiz - Bright Minds</title>
+    <script src="js/protect.js"></script>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/celebrations.css">
     <style>
@@ -366,30 +367,78 @@
         });
 
         async function loadQuiz() {
-            // Check if we should use dynamic question generation (for Math Champions quiz)
-            if (quizId === '2' && useDynamic) {
-                await loadDynamicMathQuiz();
-                return;
-            }
+            try {
+                // For Math quiz (ID 2), use dynamic generation
+                if (quizId === '2') {
+                    await loadDynamicMathQuiz();
+                    return;
+                }
 
-            const quizBank = quizBanks[quizId];
-            if (!quizBank) {
-                alert('Quiz not found!');
+                // Load quiz from database API
+                const response = await fetch(`api/quiz.php?action=get&id=${quizId}`);
+                const data = await response.json();
+
+                if (!data.success || !data.quiz) {
+                    throw new Error('Quiz not found in database');
+                }
+
+                const quiz = data.quiz;
+
+                // Check if quiz has questions
+                if (!quiz.questions || quiz.questions.length === 0) {
+                    throw new Error('This quiz has no questions. Please import the database SQL file.');
+                }
+
+                // Transform database questions to match expected format
+                const questions = quiz.questions.map((q, idx) => {
+                    // Find the correct answer index - handle both string "1" and number 1
+                    let correctIndex = -1;
+                    for (let i = 0; i < q.options.length; i++) {
+                        if (q.options[i].is_correct == 1 || q.options[i].is_correct === '1' || q.options[i].is_correct === true) {
+                            correctIndex = i;
+                            break;
+                        }
+                    }
+
+                    return {
+                        id: q.questionID,  // Database ID
+                        questionID: q.questionID,
+                        question: q.question_text,
+                        options: q.options.map(opt => opt.option_text),
+                        correct: correctIndex,
+                        explanation: q.explanation
+                    };
+                });
+
+                currentQuiz = {
+                    quizID: quiz.quizID,
+                    title: quiz.title,
+                    icon: getQuizIcon(quizId),
+                    description: quiz.description,
+                    timeLimit: quiz.time_limit || 300,
+                    xpReward: quiz.xp_reward,
+                    coinReward: quiz.coin_reward,
+                    questions: questions
+                };
+
+                document.getElementById('quizTitle').textContent = currentQuiz.icon + ' ' + currentQuiz.title;
+                document.getElementById('questionCount').textContent = currentQuiz.questions.length;
+
+                renderQuestions();
+                document.getElementById('submitBtn').style.display = 'inline-flex';
+                startTimer();
+
+            } catch (error) {
+                console.error('Error loading quiz:', error);
+                alert('Failed to load quiz: ' + error.message);
                 location.href = 'quiz.html';
-                return;
             }
+        }
 
-            const shuffled = [...quizBank.questions].sort(() => Math.random() - 0.5);
-            selectedQuestions = shuffled.slice(0, 5);
-
-            currentQuiz = { ...quizBank, questions: selectedQuestions };
-
-            document.getElementById('quizTitle').textContent = currentQuiz.icon + ' ' + currentQuiz.title;
-            document.getElementById('questionCount').textContent = currentQuiz.questions.length;
-
-            renderQuestions();
-            document.getElementById('submitBtn').style.display = 'inline-flex';
-            startTimer();
+        // Helper function to get quiz icon
+        function getQuizIcon(id) {
+            const icons = { '1': '🦁', '2': '🔢', '3': '🌍', '4': '🚀' };
+            return icons[id] || '📝';
         }
 
         async function loadDynamicMathQuiz() {
@@ -485,44 +534,157 @@
             }, 1000);
         }
         
-        function submitQuiz() {
+        async function submitQuiz() {
             clearInterval(timerInterval);
-            
+
             let correct = 0;
             currentQuiz.questions.forEach((q, idx) => {
                 if (answers[idx] === q.correct) correct++;
             });
-            
+
             const scorePercent = Math.round((correct / currentQuiz.questions.length) * 100);
-            
-            let xpReward = currentQuiz.xpReward;
-            let coinReward = currentQuiz.coinReward;
-            
-            if (scorePercent === 100) {
-                xpReward += 50;
-                coinReward += 25;
-            } else if (scorePercent >= 80) {
-                xpReward += 20;
-                coinReward += 10;
-            }
-            
+
+            // Show results immediately
             document.getElementById('quizContent').style.display = 'none';
             document.getElementById('submitBtn').style.display = 'none';
             document.getElementById('scoreDisplay').textContent = scorePercent + '%';
-            
+
             let message = scorePercent === 100 ? 'Perfect! You\'re a genius! 🌟' :
                          scorePercent >= 80 ? 'Great job! Well done! 🎉' :
                          scorePercent >= 60 ? 'Good effort! Keep practicing! 💪' :
                          'Keep learning! You can do it! 🌱';
-            
+
             document.getElementById('resultMessage').textContent = message;
-            document.getElementById('rewardsText').textContent = `You earned ${xpReward} XP and ${coinReward} Coins!`;
-            
-            showReview();
             document.getElementById('resultsScreen').classList.add('show');
-            
-            if (typeof awardXP === 'function') {
-                setTimeout(() => awardXP(xpReward, coinReward), 1000);
+
+            showReview();
+
+            // Submit to API to save results and award coins/XP
+            try {
+                const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+
+                // Prepare answers in the format the API expects
+                const apiAnswers = {};
+                currentQuiz.questions.forEach((q, idx) => {
+                    if (answers[idx] !== undefined) {
+                        // Map answer index to option letter (A, B, C, D)
+                        const letters = ['A', 'B', 'C', 'D'];
+                        apiAnswers[q.questionID] = letters[answers[idx]];
+                    }
+                });
+
+                const response = await fetch('api/quiz.php?action=submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        quizId: quizId,
+                        answers: apiAnswers,
+                        timeSpent: timeSpent
+                    })
+                });
+
+                const responseText = await response.text();
+                console.log('API Response:', responseText);
+
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('Failed to parse JSON response:', parseError);
+                    console.error('Response text:', responseText);
+                    throw new Error('Invalid JSON response from server');
+                }
+
+                if (data.success) {
+                    // Update rewards display with actual earned amounts
+                    const xpEarned = data.rewards.xp;
+                    const coinsEarned = data.rewards.coins;
+
+                    document.getElementById('rewardsText').textContent = `You earned ${xpEarned} XP and ${coinsEarned} Coins!`;
+
+                    // Show celebrations!
+                    console.log('Triggering celebrations...', { scorePercent, xpEarned, coinsEarned });
+
+                    if (window.Celebrations) {
+                        console.log('Celebrations object found, initializing...');
+
+                        try {
+                            Celebrations.init();
+
+                            // Confetti for great scores
+                            if (scorePercent >= 80) {
+                                setTimeout(() => {
+                                    console.log('Showing confetti...');
+                                    Celebrations.showConfetti(3000, scorePercent === 100 ? 150 : 100);
+                                }, 500);
+                            }
+
+                            // Coin rain
+                            setTimeout(() => {
+                                console.log('Showing coin rain...');
+                                Celebrations.showCoinRain(coinsEarned > 50 ? 40 : 25);
+                            }, 800);
+
+                            // Success modal
+                            setTimeout(() => {
+                                console.log('Showing success modal...');
+                                Celebrations.showSuccess(
+                                    scorePercent === 100 ? 'Perfect Score!' : scorePercent >= 80 ? 'Great Job!' : 'Well Done!',
+                                    xpEarned,
+                                    coinsEarned
+                                );
+                            }, 1200);
+
+                            // Sound effects
+                            setTimeout(() => {
+                                if (scorePercent === 100) {
+                                    Celebrations.sounds.achievement();
+                                } else {
+                                    Celebrations.sounds.success();
+                                }
+                            }, 600);
+                        } catch (err) {
+                            console.error('Celebration error:', err);
+                        }
+                    } else {
+                        console.error('Celebrations object not found! Check if celebrations.js is loaded.');
+                    }
+
+                    // Update local display using dashboard function if available
+                    if (typeof awardXP === 'function') {
+                        setTimeout(() => awardXP(xpEarned, coinsEarned), 1000);
+                    }
+                } else {
+                    console.error('Quiz submission failed:', data.message);
+                    // Still show estimated rewards
+                    let xpReward = currentQuiz.xpReward;
+                    let coinReward = currentQuiz.coinReward;
+
+                    if (scorePercent === 100) {
+                        xpReward += 50;
+                        coinReward += 25;
+                    } else if (scorePercent >= 80) {
+                        xpReward += 20;
+                        coinReward += 10;
+                    }
+
+                    document.getElementById('rewardsText').textContent = `You earned ${xpReward} XP and ${coinReward} Coins!`;
+                }
+            } catch (error) {
+                console.error('Error submitting quiz:', error);
+                // Fallback: show estimated rewards
+                let xpReward = currentQuiz.xpReward;
+                let coinReward = currentQuiz.coinReward;
+
+                if (scorePercent === 100) {
+                    xpReward += 50;
+                    coinReward += 25;
+                } else if (scorePercent >= 80) {
+                    xpReward += 20;
+                    coinReward += 10;
+                }
+
+                document.getElementById('rewardsText').textContent = `You earned ${xpReward} XP and ${coinReward} Coins!`;
             }
         }
         

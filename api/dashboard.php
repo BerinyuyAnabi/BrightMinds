@@ -14,8 +14,14 @@ $action = $_GET['action'] ?? '';
 switch ($action) {
     case 'stats':
         $childId = getCurrentChildId();
-        $stats = $db->selectOne("SELECT * FROM vw_child_progress WHERE childID = ?", [$childId]);
-        
+
+        // Get child stats directly from children table
+        $stats = $db->selectOne("
+            SELECT childID, display_name, total_xp, current_level, coins, streak_days
+            FROM children
+            WHERE childID = ?
+        ", [$childId]);
+
         $recentActivity = $db->select("
             SELECT * FROM vw_recent_activities 
             WHERE childID = ? 

@@ -19,9 +19,9 @@ ini_set('display_errors', 1);
 // DATABASE CONFIGURATION
 // ========================================
 define('DB_HOST', 'localhost');
-define('DB_PORT', 3306);
+define('DB_PORT', 8889);  // Changed the port number to fit mac 
 define('DB_USER', 'root');
-define('DB_PASS', '');  // Set your MySQL password here
+define('DB_PASS', 'root');  // MAMP default password
 define('DB_NAME', 'bright_minds_db');
 
 // ========================================
@@ -29,7 +29,7 @@ define('DB_NAME', 'bright_minds_db');
 // ========================================
 define('APP_NAME', 'Bright Minds');
 define('APP_VERSION', '2.0');
-define('BASE_URL', 'http://localhost/bright-minds-complete/');
+define('BASE_URL', 'http://localhost:8888/bright-minds/'); // Changed this line 
 define('TIMEZONE', 'UTC');
 
 // Set timezone
@@ -108,16 +108,16 @@ class Database {
     
     public function query($sql, $params = []) {
         $stmt = $this->connection->prepare($sql);
-        
+
         if (!$stmt) {
             $this->logError('Query preparation failed: ' . $this->connection->error);
             return false;
         }
-        
+
         if (!empty($params)) {
             $types = '';
             $values = [];
-            
+
             foreach ($params as $param) {
                 if (is_int($param)) {
                     $types .= 'i';
@@ -128,11 +128,22 @@ class Database {
                 }
                 $values[] = $param;
             }
-            
+
             $stmt->bind_param($types, ...$values);
         }
-        
+
         $stmt->execute();
+
+        // Handle stored procedures: close statement and clear remaining results
+        if (stripos($sql, 'CALL') === 0) {
+            $stmt->close();
+            // Clear any remaining results from the stored procedure
+            while ($this->connection->more_results()) {
+                $this->connection->next_result();
+            }
+            return true;
+        }
+
         return $stmt;
     }
     
