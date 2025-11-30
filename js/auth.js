@@ -132,34 +132,37 @@ function setupSignupForm() {
             } catch (parseError) {
                 console.error('Failed to parse JSON response:', parseError);
                 console.error('Response text:', responseText);
-                throw new Error('Invalid response from server. Please check console for details.');
+                document.getElementById('loadingSignup').classList.add('hidden');
+                showToast('Invalid response from server. Please check console for details.', 'error');
+                return;
             }
-            
+
             // Hide loading
             document.getElementById('loadingSignup').classList.add('hidden');
-            
+
             if (data.success) {
                 // Store user data in localStorage for client-side use
                 localStorage.setItem('brightMindsSession', JSON.stringify({
-                    userId: data.userId,
+                    userId: data.user?.userId || data.userId,
                     username: data.user?.username || username,
                     displayName: data.user?.displayName || displayName,
                     email: data.user?.email || email,
-                    role: data.role || 'child',
+                    role: data.user?.role || data.role || 'child',
                     avatar: data.user?.avatar || avatar,
                     childID: data.user?.childID || null
                 }));
-                
+
                 // Show success
                 showToast('Account created successfully! Welcome! 🎉', 'success');
-                
+
                 // Redirect to dashboard
                 setTimeout(() => {
                     window.location.href = 'dashboard.php';
                 }, 1500);
             } else {
-                // Show error
-                showToast(data.message || 'Registration failed. Please try again.', 'error');
+                // Show specific error message from server
+                const errorMessage = data.message || data.errors || 'Registration failed. Please try again.';
+                showToast(errorMessage, 'error');
             }
         } catch (error) {
             console.error('Registration error:', error);
