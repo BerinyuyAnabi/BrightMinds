@@ -6,6 +6,71 @@
     <title>Bright Minds - Learn, Play, Grow! 🌟</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/auth.css">
+    <style>
+        /* Parent Access Link Styles */
+        .parent-access-link {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .btn-parent-access {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-parent-access:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-parent-access .icon {
+            font-size: 1.2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .parent-access-link {
+                top: 10px;
+                right: 10px;
+            }
+            
+            .btn-parent-access {
+                padding: 10px 18px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        .auth-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: var(--gray);
+        }
+        
+        .auth-footer a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        
+        .auth-footer a:hover {
+            color: var(--secondary-purple);
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <!-- Animated Background -->
@@ -20,6 +85,14 @@
         <div class="float-icon icon-2">🎮</div>
         <div class="float-icon icon-3">🎨</div>
         <div class="float-icon icon-4">🚀</div>
+    </div>
+
+    <!-- Parent Access Button (Top Right) -->
+    <div class="parent-access-link">
+        <button class="btn-parent-access" onclick="location.href='parent-auth.html'">
+            <span class="icon">👤</span>
+            <span>Parent Access</span>
+        </button>
     </div>
 
     <div class="container">
@@ -66,6 +139,11 @@
                     <span class="feature-icon">🏆</span>
                     <span>Earn Rewards</span>
                 </div>
+            </div>
+            
+            <!-- Parent Access Footer Link -->
+            <div class="auth-footer">
+                <p>Are you a parent? <a href="parent-auth.html">Access Parent Dashboard →</a></p>
             </div>
         </section>
 
@@ -194,6 +272,11 @@
                 <div class="loading-spinner"></div>
                 <p>Creating your account...</p>
             </div>
+            
+            <!-- Parent Access Link in Form -->
+            <div class="auth-footer">
+                <p>Are you a parent? <a href="parent-auth.html">Access Parent Dashboard →</a></p>
+            </div>
         </section>
 
         <!-- Login Form -->
@@ -246,6 +329,11 @@
             <div class="loading-overlay hidden" id="loadingLogin">
                 <div class="loading-spinner"></div>
                 <p>Logging you in...</p>
+            </div>
+            
+            <!-- Parent Access Link in Form -->
+            <div class="auth-footer">
+                <p>Are you a parent? <a href="parent-auth.html">Access Parent Dashboard →</a></p>
             </div>
         </section>
     </div>
