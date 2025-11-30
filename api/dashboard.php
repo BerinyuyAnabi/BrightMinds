@@ -116,13 +116,24 @@ switch ($action) {
         }
 
         // Link child to parent
-        $db->execute("
-            UPDATE children 
-            SET parentID = ? 
-            WHERE childID = ?
+        $update = $db->execute("
+        UPDATE children 
+        SET parentID = ? 
+        WHERE childID = ?
         ", [$parent['userID'], $childId]);
 
-        jsonResponse(['success' => true, 'message' => 'Child linked to parent successfully']);
+        if ($update) {
+            jsonResponse([
+                'success' => true,
+                'message' => 'Child linked to parent successfully'
+            ]);
+        } else {
+            jsonResponse([
+                'success' => false,
+                'message' => 'Failed to link child to parent. Please try again.'
+            ]);
+        }
+
         break;
         
     default:
