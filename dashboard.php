@@ -174,7 +174,7 @@ $childId = $_SESSION['user_id'];
 if(isParentLinked($childId)){ 
     echo '
             <!-- Show if not linked -->
-            <div id="notLinkedView" class="hidden">
+            <div id="notLinkedView" class="">
                 <h3>🔗 Link to Parent Account</h3>
                 <p>Connect with your parent so they can track your amazing progress!</p>
                 <input 
@@ -191,7 +191,7 @@ if(isParentLinked($childId)){
 } else {
     echo ' 
             <!-- Show if linked -->
-            <div id="linkedView" class="hidden">
+            <div id="linkedView" class="">
                 <h3>✅ Connected to Parent</h3>
                 <div class="parent-info">
                     <p>
