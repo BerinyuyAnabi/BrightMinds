@@ -170,7 +170,7 @@ if ($childId) {
 // session_start();
 $childId = $_SESSION['user_id'];
 
-echo '<div> Parent Linking '.$isParentLinked($childId). ' Placeholder </div>';
+echo '<div> Parent Linking '.isParentLinked($childId). ' Placeholder </div>';
 // if(isParentLinked($childId)){ 
 //     echo '
 //             <!-- Show if not linked -->
