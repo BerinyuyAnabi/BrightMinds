@@ -164,7 +164,7 @@ if ($childId) {
         <!-- Parent Linking Section -->
         <div>
             <!-- Show if not linked -->
-            <div id="notLinkedView" class="hidden">
+            <div id="notLinkedView" > 
                 <h3>🔗 Link to Parent Account</h3>
                 <p>Connect with your parent so they can track your amazing progress!</p>
                 <input 
