@@ -252,6 +252,7 @@ async function linkToParent() {
         });
         
         const linkData = await linkResponse.json();
+        console.log('Link to parent response:', linkData);
         
         if (linkData.success) {
             showToast('Successfully linked to parent account! 🎉', 'success');
