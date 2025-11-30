@@ -217,10 +217,10 @@ async function linkToParent() {
     }
     
     // Validate format (PAR-XXXXX or LINK-XXXX)
-    // if (!inviteCode.match(/^(PAR|LINK)-[A-Z0-9]{4,5}$/)) {
-    //     showToast('Invalid code format. Use PAR-XXXXX or LINK-XXXX', 'error');
-    //     return;
-    // }
+    if (!inviteCode.match(/^(PAR|LINK)-[A-Z0-9]{4,5}$/)) {
+        showToast('Invalid code format. Use PAR-XXXXX or LINK-XXXX', 'error');
+        return;
+    }
     
     try {
         // First verify the code
