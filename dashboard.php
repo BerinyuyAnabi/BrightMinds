@@ -171,45 +171,50 @@ if ($childId) {
 $childId = $_SESSION['user_id'];
 
 // echo '<div> Parent Linking '.isParentLinked($childId). ' Placeholder </div>';
-if(isParentLinked($childId)){ 
+<?php
+// session_start();
+$childId = $_SESSION['user_id'];
+
+// Check if parent is linked
+if (!isParentLinked($childId)) { 
+    // SHOW IF NOT LINKED
     echo '
-            <!-- Show if not linked -->
-            <div id="notLinkedView" class="">
-                <h3>🔗 Link to Parent Account</h3>
-                <p>Connect with your parent so they can track your amazing progress!</p>
-                <input 
-                    type="text" 
-                    id="parentInviteCode" 
-                    class="parent-link-input"
-                    placeholder="Enter parent code (e.g., PAR-A7B3K or LINK-8X4Y)" 
-                    maxlength="12">
-                <button onclick="linkToParent()" class="btn btn-primary" style="width: 100%;">
-                    🚀 Link My Account
-                </button>
-            </div>
-    '
+        <div id="notLinkedView">
+            <h3>🔗 Link to Parent Account</h3>
+            <p>Connect with your parent so they can track your amazing progress!</p>
+            <input 
+                type="text" 
+                id="parentInviteCode"
+                class="parent-link-input"
+                placeholder="Enter parent code (e.g., PAR-A7B3K or LINK-8X4Y)" 
+                maxlength="12">
+            <button onclick="linkToParent()" class="btn btn-primary" style="width: 100%;">
+                🚀 Link My Account
+            </button>
+        </div>
+    ';
 } else {
-    echo ' 
-            <!-- Show if linked -->
-            <div id="linkedView" class="">
-                <h3>✅ Connected to Parent</h3>
-                <div class="parent-info">
-                    <p>
-                        <strong>Parent:</strong> 
-                        <span id="parentUsername">Loading...</span>
-                    </p>
-                    <p>
-                        <strong>Linked since:</strong> 
-                        <span id="linkedDate">Loading...</span>
-                    </p>
-                </div>
-                <button onclick="confirmUnlinkParent()" class="btn-unlink">
-                    🔓 Unlink from Parent
-                </button>
+    // SHOW IF LINKED
+    echo '
+        <div id="linkedView">
+            <h3>✅ Connected to Parent</h3>
+            <div class="parent-info">
+                <p>
+                    <strong>Parent:</strong> 
+                    <span id="parentUsername">Loading...</span>
+                </p>
+                <p>
+                    <strong>Linked since:</strong> 
+                    <span id="linkedDate">Loading...</span>
+                </p>
             </div>
-        </div> '
+            <button onclick="confirmUnlinkParent()" class="btn-unlink">
+                🔓 Unlink from Parent
+            </button>
+        </div>
+    ';
 }
-        ?>
+?>
         
         <!-- Activities -->
         <h2 style="color: var(--primary-blue); margin: 20px 0; font-size: 2rem;">Choose Your Activity</h2>
