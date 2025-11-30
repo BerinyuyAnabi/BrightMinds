@@ -219,9 +219,9 @@ function handleLogin() {
         [$user['userID']]
     );
     
-    // Update streak if child
+    // Update streak if child (using PHP function instead of stored procedure)
     if ($user['role'] === 'child' && isset($user['childID'])) {
-        $db->query("CALL update_streak(?)", [$user['childID']]);
+        update_streak($user['childID']);
     }
     
     // Create session

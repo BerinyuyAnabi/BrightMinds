@@ -289,6 +289,54 @@ function award_xp($childID, $xp_amount, $coin_amount) {
 }
 
 /**
+ * Update login streak for a child
+ * Replaces the update_streak stored procedure
+ *
+ * @param int $childID The child's ID
+ * @return int The current streak days
+ */
+function update_streak($childID) {
+    $db = getDB();
+
+    // Get current streak and last activity date
+    $child = $db->selectOne("
+        SELECT last_activity_date, streak_days
+        FROM children
+        WHERE childID = ?
+    ", [$childID]);
+
+    if (!$child) return 0;
+
+    $lastActivity = $child['last_activity_date'];
+    $currentStreak = $child['streak_days'] ?? 0;
+    $today = date('Y-m-d');
+
+    if ($lastActivity === $today) {
+        // Already logged in today, do nothing
+        return $currentStreak;
+    } elseif ($lastActivity === date('Y-m-d', strtotime('-1 day'))) {
+        // Logged in yesterday, increment streak
+        $newStreak = $currentStreak + 1;
+        $db->query("
+            UPDATE children
+            SET streak_days = ?,
+                last_activity_date = ?
+            WHERE childID = ?
+        ", [$newStreak, $today, $childID]);
+        return $newStreak;
+    } else {
+        // Streak broken, reset to 1
+        $db->query("
+            UPDATE children
+            SET streak_days = 1,
+                last_activity_date = ?
+            WHERE childID = ?
+        ", [$today, $childID]);
+        return 1;
+    }
+}
+
+/**
  * Sanitize input
  */
 function sanitizeInput($data) {

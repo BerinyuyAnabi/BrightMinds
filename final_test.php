@@ -47,15 +47,15 @@ $sessionId = $db->insert("
 
 echo "✅ Play session created (ID: {$sessionId})<br><br>";
 
-echo "<h2>Step 3: Award Coins via Stored Procedure</h2>";
-echo "Calling: <code>CALL award_xp({$childId}, {$xpEarned}, {$coinsEarned})</code><br>";
+echo "<h2>Step 3: Award Coins via PHP Function</h2>";
+echo "Calling: <code>award_xp({$childId}, {$xpEarned}, {$coinsEarned})</code><br>";
 
-$result = $db->query("CALL award_xp(?, ?, ?)", [$childId, $xpEarned, $coinsEarned]);
+$result = award_xp($childId, $xpEarned, $coinsEarned);
 
 if ($result) {
-    echo "<span class='success'>✅ Stored procedure executed successfully</span><br><br>";
+    echo "<span class='success'>✅ PHP function executed successfully</span><br><br>";
 } else {
-    echo "<span class='error'>❌ Stored procedure failed</span><br><br>";
+    echo "<span class='error'>❌ PHP function failed</span><br><br>";
 }
 
 echo "<h2>Step 4: Check Updated Stats</h2>";

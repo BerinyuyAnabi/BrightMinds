@@ -137,9 +137,9 @@ try {
 
     echo "Play session created: ID {$sessionId}<br>";
 
-    // Award XP and coins
+    // Award XP and coins (using PHP function instead of stored procedure)
     echo "<strong>Calling award_xp({$childId}, {$xpEarned}, {$coinsEarned})</strong><br>";
-    $result = $db->query("CALL award_xp(?, ?, ?)", [$childId, $xpEarned, $coinsEarned]);
+    $result = award_xp($childId, $xpEarned, $coinsEarned);
 
     if ($result) {
         echo "<p class='success'>✅ award_xp executed</p>";
