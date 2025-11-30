@@ -381,6 +381,8 @@ function createSession($userId, $role, $childId = null, $rememberMe = false) {
     );
     
     // Set session variables
+    session_start();
+
     $_SESSION['user_id'] = $userId;
     $_SESSION['role'] = $role;
     $_SESSION['session_token'] = $sessionToken;

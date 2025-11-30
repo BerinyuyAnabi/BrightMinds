@@ -166,6 +166,7 @@ if ($childId) {
         <!-- Parent Linking Section -->
         <div class="parent-link-section" id="parentLinkSection">
 <?php
+// $childId = getCurrentChildId()
 if(isParentLinked($childId)){ 
     echo '
             <!-- Show if not linked -->
@@ -182,7 +183,7 @@ if(isParentLinked($childId)){
                     🚀 Link My Account
                 </button>
             </div>
-    ' 
+    '
 } else {
     echo ' 
             <!-- Show if linked -->
