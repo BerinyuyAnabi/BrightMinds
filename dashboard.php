@@ -51,8 +51,8 @@ if ($childId) {
     <style>
         /* Parent Link Section Styles */
         .parent-link-section {
-            /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
-            background: blueviolet;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* background: blueviolet; */
             padding: 20px;
             border-radius: 15px;
             margin: 20px 0;
@@ -162,7 +162,7 @@ if ($childId) {
         </div>
         
         <!-- Parent Linking Section -->
-        <div class="parent-link-section" id="parentLinkSection">
+        <div>
             <!-- Show if not linked -->
             <div id="notLinkedView" class="hidden">
                 <h3>🔗 Link to Parent Account</h3>
