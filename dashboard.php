@@ -167,8 +167,9 @@ if ($childId) {
         <div class="parent-link-section" id="parentLinkSection">
 
 <?php
-echo '<div> Parent Linking Section Placeholder </div>';
-// $childId = getCurrentChildId();
+
+$childId = getCurrentChildId();
+echo '<div> Parent Linking'.$childId. 'Placeholder </div>';
 // if(isParentLinked($childId)){ 
 //     echo '
 //             <!-- Show if not linked -->
