@@ -258,9 +258,9 @@ async function linkToParent() {
             inviteCodeInput.value = '';
             
             // Reload parent info
-            setTimeout(() => {
-                loadParentInfo();
-            }, 1500);
+            // setTimeout(() => {
+            //     loadParentInfo();
+            // }, 1500);
         } else {
             showToast(linkData.message || 'Failed to link account', 'error');
         }
