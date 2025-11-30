@@ -168,7 +168,7 @@ if ($childId) {
 
 <?php
 
-$childId = localstorage.getItem('brightMindsSession')['userId'];
+$childId = localStorage.getItem('brightMindsSession')['userId'];
 echo '<div> Parent Linking '.$childId. ' Placeholder </div>';
 // if(isParentLinked($childId)){ 
 //     echo '
