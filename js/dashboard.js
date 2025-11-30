@@ -21,6 +21,9 @@ window.addEventListener('DOMContentLoaded', () => {
     loadRecentActivities();
 });
 
+let childId = localStorage.getItem('brightMindsSession')['userId'];
+
+
 // Refresh profile when page becomes visible (user returns from game)
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden && typeof loadProfile === 'function') {

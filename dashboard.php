@@ -167,8 +167,9 @@ if ($childId) {
         <div class="parent-link-section" id="parentLinkSection">
 
 <?php
+session_start();
+$childId = $_SESSION['child_id'];
 
-$childId = localStorage.getItem('brightMindsSession')['userId'];
 echo '<div> Parent Linking '.$childId. ' Placeholder </div>';
 // if(isParentLinked($childId)){ 
 //     echo '
