@@ -121,8 +121,19 @@ function setupSignupForm() {
                     role: 'child'
                 })
             });
-            
-            const data = await response.json();
+
+            // Get response as text first for debugging
+            const responseText = await response.text();
+            console.log('Registration response:', responseText);
+
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('Failed to parse JSON response:', parseError);
+                console.error('Response text:', responseText);
+                throw new Error('Invalid response from server. Please check console for details.');
+            }
             
             // Hide loading
             document.getElementById('loadingSignup').classList.add('hidden');

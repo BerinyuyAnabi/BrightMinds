@@ -309,6 +309,9 @@ function validateEmail($email) {
  * Send JSON response
  */
 function jsonResponse($data, $statusCode = 200) {
+    // Clear any output buffers to prevent PHP warnings/errors from breaking JSON
+    if (ob_get_length()) ob_clean();
+
     http_response_code($statusCode);
     header('Content-Type: application/json');
     echo json_encode($data);

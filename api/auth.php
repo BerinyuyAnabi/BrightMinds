@@ -4,6 +4,9 @@
  * Handles user registration, login, logout, and session management
  */
 
+// Prevent any output before JSON
+ob_start();
+
 require_once '../includes/config.php';
 
 // Set JSON header
