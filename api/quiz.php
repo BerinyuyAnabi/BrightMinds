@@ -191,12 +191,16 @@ function handleSubmit() {
         $coinsEarned = floor($coinsEarned * 0.5);
     }
     
+    // Get next sessionID (manual increment since AUTO_INCREMENT may not be enabled)
+    $maxSession = $db->selectOne("SELECT MAX(sessionID) as max_id FROM play_sessions");
+    $nextSessionId = ($maxSession['max_id'] ?? 0) + 1;
+
     // Create play session
     $sessionId = $db->insert("
-        INSERT INTO play_sessions 
-        (childID, activity_type, activity_id, start_time, end_time, duration_seconds, score, xp_earned, coins_earned, completed)
-        VALUES (?, 'quiz', ?, NOW() - INTERVAL ? SECOND, NOW(), ?, ?, ?, ?, 1)
-    ", [$childId, $quizId, $timeSpent, $timeSpent, $scorePercentage, $xpEarned, $coinsEarned]);
+        INSERT INTO play_sessions
+        (sessionID, childID, activity_type, activity_id, start_time, end_time, duration_seconds, score, xp_earned, coins_earned, completed)
+        VALUES (?, ?, 'quiz', ?, NOW() - INTERVAL ? SECOND, NOW(), ?, ?, ?, ?, 1)
+    ", [$nextSessionId, $childId, $quizId, $timeSpent, $timeSpent, $scorePercentage, $xpEarned, $coinsEarned]);
     
     // Award XP and coins (using PHP function instead of stored procedure)
     award_xp($childId, $xpEarned, $coinsEarned);

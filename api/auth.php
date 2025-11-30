@@ -345,11 +345,16 @@ function createSession($userId, $role, $childId = null, $rememberMe = false) {
     $lifetime = $rememberMe ? (30 * 24 * 3600) : SESSION_LIFETIME; // 30 days or 24 hours
     $expiresAt = date('Y-m-d H:i:s', time() + $lifetime);
     
+    // Get next sessionID (manual increment since AUTO_INCREMENT may not be enabled)
+    $maxSession = $db->selectOne("SELECT MAX(sessionID) as max_id FROM user_sessions");
+    $nextSessionId = ($maxSession['max_id'] ?? 0) + 1;
+
     // Insert session into database
     $db->insert(
-        "INSERT INTO user_sessions (userID, session_token, ip_address, user_agent, expires_at) 
-         VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO user_sessions (sessionID, userID, session_token, ip_address, user_agent, expires_at)
+         VALUES (?, ?, ?, ?, ?, ?)",
         [
+            $nextSessionId,
             $userId,
             $sessionToken,
             $_SERVER['REMOTE_ADDR'] ?? null,

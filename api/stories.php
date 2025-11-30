@@ -29,12 +29,16 @@ switch ($action) {
         $childId = getCurrentChildId();
         
         $story = $db->selectOne("SELECT xp_reward, coin_reward FROM stories WHERE storyID = ?", [$storyId]);
-        
+
+        // Get next sessionID (manual increment since AUTO_INCREMENT may not be enabled)
+        $maxSession = $db->selectOne("SELECT MAX(sessionID) as max_id FROM play_sessions");
+        $nextSessionId = ($maxSession['max_id'] ?? 0) + 1;
+
         $sessionId = $db->insert("
-            INSERT INTO play_sessions 
-            (childID, activity_type, activity_id, start_time, end_time, duration_seconds, xp_earned, coins_earned, completed)
-            VALUES (?, 'story', ?, NOW() - INTERVAL 60 SECOND, NOW(), 60, ?, ?, 1)
-        ", [$childId, $storyId, $story['xp_reward'], $story['coin_reward']]);
+            INSERT INTO play_sessions
+            (sessionID, childID, activity_type, activity_id, start_time, end_time, duration_seconds, xp_earned, coins_earned, completed)
+            VALUES (?, ?, 'story', ?, NOW() - INTERVAL 60 SECOND, NOW(), 60, ?, ?, 1)
+        ", [$nextSessionId, $childId, $storyId, $story['xp_reward'], $story['coin_reward']]);
         
         award_xp($childId, $story['xp_reward'], $story['coin_reward']);
         

@@ -38,12 +38,16 @@ $xpEarned = floor($quiz['xp_reward'] * 2);
 $coinsEarned = floor($quiz['coin_reward'] * 2);
 echo "Perfect score rewards: {$xpEarned} XP, {$coinsEarned} coins<br><br>";
 
+// Get next sessionID (manual increment since AUTO_INCREMENT may not be enabled)
+$maxSession = $db->selectOne("SELECT MAX(sessionID) as max_id FROM play_sessions");
+$nextSessionId = ($maxSession['max_id'] ?? 0) + 1;
+
 // Create play session
 $sessionId = $db->insert("
     INSERT INTO play_sessions
-    (childID, activity_type, activity_id, start_time, end_time, duration_seconds, score, xp_earned, coins_earned, completed)
-    VALUES (?, 'quiz', ?, NOW() - INTERVAL 120 SECOND, NOW(), 120, 100, ?, ?, 1)
-", [$childId, $quizId, $xpEarned, $coinsEarned]);
+    (sessionID, childID, activity_type, activity_id, start_time, end_time, duration_seconds, score, xp_earned, coins_earned, completed)
+    VALUES (?, ?, 'quiz', ?, NOW() - INTERVAL 120 SECOND, NOW(), 120, 100, ?, ?, 1)
+", [$nextSessionId, $childId, $quizId, $xpEarned, $coinsEarned]);
 
 echo "✅ Play session created (ID: {$sessionId})<br><br>";
 

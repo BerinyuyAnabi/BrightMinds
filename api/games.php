@@ -99,11 +99,15 @@ function handleStart() {
         jsonResponse(['success' => false, 'message' => 'Game ID required'], 400);
     }
     
+    // Get next sessionID (manual increment since AUTO_INCREMENT may not be enabled)
+    $maxSession = $db->selectOne("SELECT MAX(sessionID) as max_id FROM play_sessions");
+    $nextSessionId = ($maxSession['max_id'] ?? 0) + 1;
+
     // Create play session
     $sessionId = $db->insert("
-        INSERT INTO play_sessions (childID, activity_type, activity_id, start_time)
-        VALUES (?, 'game', ?, NOW())
-    ", [$childId, $gameId]);
+        INSERT INTO play_sessions (sessionID, childID, activity_type, activity_id, start_time)
+        VALUES (?, ?, 'game', ?, NOW())
+    ", [$nextSessionId, $childId, $gameId]);
     
     if (!$sessionId) {
         jsonResponse(['success' => false, 'message' => 'Failed to start session'], 500);
