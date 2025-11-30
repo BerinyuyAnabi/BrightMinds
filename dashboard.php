@@ -165,8 +165,9 @@ if ($childId) {
         
         <!-- Parent Linking Section -->
         <div class="parent-link-section" id="parentLinkSection">
+
 <?php
-// $childId = getCurrentChildId()
+$childId = getCurrentChildId();
 if(isParentLinked($childId)){ 
     echo '
             <!-- Show if not linked -->
