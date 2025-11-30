@@ -170,45 +170,45 @@ if ($childId) {
 // session_start();
 $childId = $_SESSION['user_id'];
 
-// echo '<div> Parent Linking '.$childId. ' Placeholder </div>';
-if(isParentLinked($childId)){ 
-    echo '
-            <!-- Show if not linked -->
-            <div id="notLinkedView" class="hidden">
-                <h3>🔗 Link to Parent Account</h3>
-                <p>Connect with your parent so they can track your amazing progress!</p>
-                <input 
-                    type="text" 
-                    id="parentInviteCode" 
-                    class="parent-link-input"
-                    placeholder="Enter parent code (e.g., PAR-A7B3K or LINK-8X4Y)" 
-                    maxlength="12">
-                <button onclick="linkToParent()" class="btn btn-primary" style="width: 100%;">
-                    🚀 Link My Account
-                </button>
-            </div>
-    '
-} else {
-    echo ' 
-            <!-- Show if linked -->
-            <div id="linkedView" class="hidden">
-                <h3>✅ Connected to Parent</h3>
-                <div class="parent-info">
-                    <p>
-                        <strong>Parent:</strong> 
-                        <span id="parentUsername">Loading...</span>
-                    </p>
-                    <p>
-                        <strong>Linked since:</strong> 
-                        <span id="linkedDate">Loading...</span>
-                    </p>
-                </div>
-                <button onclick="confirmUnlinkParent()" class="btn-unlink">
-                    🔓 Unlink from Parent
-                </button>
-            </div>
-        </div> '
-}
+echo '<div> Parent Linking '.$isParentLinked($childId). ' Placeholder </div>';
+// if(isParentLinked($childId)){ 
+//     echo '
+//             <!-- Show if not linked -->
+//             <div id="notLinkedView" class="hidden">
+//                 <h3>🔗 Link to Parent Account</h3>
+//                 <p>Connect with your parent so they can track your amazing progress!</p>
+//                 <input 
+//                     type="text" 
+//                     id="parentInviteCode" 
+//                     class="parent-link-input"
+//                     placeholder="Enter parent code (e.g., PAR-A7B3K or LINK-8X4Y)" 
+//                     maxlength="12">
+//                 <button onclick="linkToParent()" class="btn btn-primary" style="width: 100%;">
+//                     🚀 Link My Account
+//                 </button>
+//             </div>
+//     '
+// } else {
+//     echo ' 
+//             <!-- Show if linked -->
+//             <div id="linkedView" class="hidden">
+//                 <h3>✅ Connected to Parent</h3>
+//                 <div class="parent-info">
+//                     <p>
+//                         <strong>Parent:</strong> 
+//                         <span id="parentUsername">Loading...</span>
+//                     </p>
+//                     <p>
+//                         <strong>Linked since:</strong> 
+//                         <span id="linkedDate">Loading...</span>
+//                     </p>
+//                 </div>
+//                 <button onclick="confirmUnlinkParent()" class="btn-unlink">
+//                     🔓 Unlink from Parent
+//                 </button>
+//             </div>
+//         </div> '
+// }
         ?>
         
         <!-- Activities -->
