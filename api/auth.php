@@ -105,6 +105,10 @@ function handleRegister() {
     // Hash password
     $hashedPassword = hashPassword($password);
 
+    // Get next userID (manual increment since AUTO_INCREMENT may not be enabled)
+    $maxUser = $db->selectOne("SELECT MAX(userID) as max_id FROM users");
+    $nextUserId = ($maxUser['max_id'] ?? 0) + 1;
+
     // Generate parent code if role is parent (replaces database trigger)
     $parentCode = null;
     if ($role === 'parent') {
@@ -114,13 +118,13 @@ function handleRegister() {
     // Insert user
     if ($role === 'parent') {
         $userId = $db->insert(
-            "INSERT INTO users (username, email, password, role, parent_code) VALUES (?, ?, ?, ?, ?)",
-            [$username, $email, $hashedPassword, $role, $parentCode]
+            "INSERT INTO users (userID, username, email, password, role, parent_code) VALUES (?, ?, ?, ?, ?, ?)",
+            [$nextUserId, $username, $email, $hashedPassword, $role, $parentCode]
         );
     } else {
         $userId = $db->insert(
-            "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
-            [$username, $email, $hashedPassword, $role]
+            "INSERT INTO users (userID, username, email, password, role) VALUES (?, ?, ?, ?, ?)",
+            [$nextUserId, $username, $email, $hashedPassword, $role]
         );
     }
     
@@ -133,11 +137,15 @@ function handleRegister() {
     
     // If child, create child profile
     if ($role === 'child') {
+        // Get next childID (manual increment since AUTO_INCREMENT may not be enabled)
+        $maxChild = $db->selectOne("SELECT MAX(childID) as max_id FROM children");
+        $nextChildId = ($maxChild['max_id'] ?? 0) + 1;
+
         $childId = $db->insert(
-            "INSERT INTO children (userID, display_name, age, avatar) VALUES (?, ?, ?, ?)",
-            [$userId, $displayName, $age, $avatar]
+            "INSERT INTO children (childID, userID, display_name, age, avatar) VALUES (?, ?, ?, ?, ?)",
+            [$nextChildId, $userId, $displayName, $age, $avatar]
         );
-        
+
         if (!$childId) {
             jsonResponse([
                 'success' => false,
