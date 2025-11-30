@@ -33,7 +33,7 @@ async function checkAuth() {
         }
     } catch (error) {
         console.error('Auth check failed:', error);
-        window.location.href = '../index.html';  //Changeed this line 
+        window.location.href = 'index.html';
     }
 }
 
