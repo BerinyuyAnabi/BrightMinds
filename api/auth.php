@@ -134,8 +134,9 @@ function handleRegister() {
             'message' => 'Registration failed. Please try again.'
         ], 500);
     }
-    
+
     // If child, create child profile
+    $childId = null;
     if ($role === 'child') {
         // Get next childID (manual increment since AUTO_INCREMENT may not be enabled)
         $maxChild = $db->selectOne("SELECT MAX(childID) as max_id FROM children");
@@ -153,18 +154,26 @@ function handleRegister() {
             ], 500);
         }
     }
-    
+
     // Log activity
     logActivity("New user registered: $username (ID: $userId)", 'auth');
-    
-    // Auto login
-    createSession($userId, $role);
-    
+
+    // Auto login - pass childId for children
+    $sessionToken = createSession($userId, $role, $childId);
+
     jsonResponse([
         'success' => true,
         'message' => 'Registration successful!',
-        'userId' => $userId,
-        'role' => $role
+        'user' => [
+            'userId' => $userId,
+            'username' => $username,
+            'email' => $email,
+            'role' => $role,
+            'displayName' => $displayName ?? $username,
+            'avatar' => $avatar ?? 'owl',
+            'childID' => $childId
+        ],
+        'sessionToken' => $sessionToken
     ]);
 }
 
