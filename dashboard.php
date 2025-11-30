@@ -168,8 +168,8 @@ if ($childId) {
 
 <?php
 
-$childId = getCurrentChildId();
-echo '<div> Parent Linking'.$childId. 'Placeholder </div>';
+$childId = localstorage.getItem('brightMindsSession')['userId'];
+echo '<div> Parent Linking '.$childId. ' Placeholder </div>';
 // if(isParentLinked($childId)){ 
 //     echo '
 //             <!-- Show if not linked -->
