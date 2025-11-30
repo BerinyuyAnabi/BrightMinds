@@ -193,8 +193,18 @@ function setupLoginForm() {
                     rememberMe
                 })
             });
-            
-            const data = await response.json();
+
+            const responseText = await response.text();
+            console.log('Login response:', responseText);
+
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('Failed to parse JSON response:', parseError);
+                console.error('Response text:', responseText);
+                throw new Error('Invalid response from server. Please check console for details.');
+            }
             
             // Hide loading
             document.getElementById('loadingLogin').classList.add('hidden');
