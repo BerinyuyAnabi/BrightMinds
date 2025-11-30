@@ -449,5 +449,16 @@ function logActivity($message, $type = 'info') {
     $entry = '[' . date('Y-m-d H:i:s') . '] ' . $message . "\n";
     @file_put_contents($logFile, $entry, FILE_APPEND);
 }
+// Checking if a parent is linked or not 
+function isParentLinked($childID) {
+    $db = getDB();
+    $result = $db->selectOne("
+        SELECT parentID
+        FROM children
+        WHERE childID = ?
+    ", [$childID]);
+
+    return !empty($result) && !is_null($result['parentID']);
+}
 
 ?>

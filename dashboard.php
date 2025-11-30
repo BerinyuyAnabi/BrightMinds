@@ -38,6 +38,8 @@ if ($childId) {
         [$childId]
     );
 }
+ 
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -162,9 +164,12 @@ if ($childId) {
         </div>
         
         <!-- Parent Linking Section -->
-        <div>
+        <div class="parent-link-section" id="parentLinkSection">
+<?php
+if(isParentLinked($childId)){ 
+    echo '
             <!-- Show if not linked -->
-            <div id="notLinkedView" > 
+            <div id="notLinkedView" class="hidden">
                 <h3>🔗 Link to Parent Account</h3>
                 <p>Connect with your parent so they can track your amazing progress!</p>
                 <input 
@@ -177,7 +182,9 @@ if ($childId) {
                     🚀 Link My Account
                 </button>
             </div>
-            
+    ' 
+} else {
+    echo ' 
             <!-- Show if linked -->
             <div id="linkedView" class="hidden">
                 <h3>✅ Connected to Parent</h3>
@@ -195,7 +202,9 @@ if ($childId) {
                     🔓 Unlink from Parent
                 </button>
             </div>
-        </div>
+        </div> '
+}
+        ?>
         
         <!-- Activities -->
         <h2 style="color: var(--primary-blue); margin: 20px 0; font-size: 2rem;">Choose Your Activity</h2>
