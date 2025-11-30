@@ -1,6 +1,6 @@
 -- ========================================
 -- BRIGHT MINDS LEARNING PLATFORM
--- Enhanced Database Schema
+--  Database Schema
 -- ========================================
 
 -- Drop database if exists and create fresh

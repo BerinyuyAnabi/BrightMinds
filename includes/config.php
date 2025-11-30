@@ -24,6 +24,12 @@ define('DB_USER', 'logan.anabi');
 define('DB_PASS', 'Minushbest#0');
 define('DB_NAME', 'webtech_2025A_logan_anabi');
 
+// define('DB_HOST', 'localhost');
+// define('DB_PORT', 8889);  
+// // define('DB_USER', 'localhost');
+// define('DB_PASS', 'root');
+// define('DB_NAME', 'bright_minds_db');
+
 // ========================================
 // APPLICATION SETTINGS
 // ========================================

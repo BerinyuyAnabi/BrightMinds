@@ -91,7 +91,7 @@ const Celebrations = {
     },
 
     // Coin Rain Animation
-    showCoinRain(count = 30) {
+    showCoinRain(count = 50) {
         const container = document.createElement('div');
         container.className = 'coin-rain-container';
         document.body.appendChild(container);
@@ -121,7 +121,7 @@ const Celebrations = {
         document.body.appendChild(burst);
 
         const stars = ['⭐', '✨', '🌟', '💫'];;
-        const particleCount = 12;
+        const particleCount = 52;
 
         for (let i = 0; i < particleCount; i++) {
             const particle = document.createElement('div');
