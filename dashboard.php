@@ -165,12 +165,6 @@ if ($childId) {
         
         <!-- Parent Linking Section -->
         <div class="parent-link-section" id="parentLinkSection">
-
-<?php
-// session_start();
-$childId = $_SESSION['user_id'];
-
-// echo '<div> Parent Linking '.isParentLinked($childId). ' Placeholder </div>';
 <?php
 // session_start();
 $childId = $_SESSION['user_id'];
