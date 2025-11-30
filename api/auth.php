@@ -107,7 +107,7 @@ function handleRegister() {
 
     // Get next userID (manual increment since AUTO_INCREMENT may not be enabled)
     $maxUser = $db->selectOne("SELECT MAX(userID) as max_id FROM users");
-    $nextUserId = ($maxUser['max_id'] ?? 0) + 1;
+    $userId = ($maxUser['max_id'] ?? 0) + 1;
 
     // Generate parent code if role is parent (replaces database trigger)
     $parentCode = null;
@@ -117,18 +117,18 @@ function handleRegister() {
 
     // Insert user
     if ($role === 'parent') {
-        $userId = $db->insert(
+        $result = $db->insert(
             "INSERT INTO users (userID, username, email, password, role, parent_code) VALUES (?, ?, ?, ?, ?, ?)",
-            [$nextUserId, $username, $email, $hashedPassword, $role, $parentCode]
+            [$userId, $username, $email, $hashedPassword, $role, $parentCode]
         );
     } else {
-        $userId = $db->insert(
+        $result = $db->insert(
             "INSERT INTO users (userID, username, email, password, role) VALUES (?, ?, ?, ?, ?)",
-            [$nextUserId, $username, $email, $hashedPassword, $role]
+            [$userId, $username, $email, $hashedPassword, $role]
         );
     }
-    
-    if (!$userId) {
+
+    if (!$result) {
         jsonResponse([
             'success' => false,
             'message' => 'Registration failed. Please try again.'
@@ -140,14 +140,14 @@ function handleRegister() {
     if ($role === 'child') {
         // Get next childID (manual increment since AUTO_INCREMENT may not be enabled)
         $maxChild = $db->selectOne("SELECT MAX(childID) as max_id FROM children");
-        $nextChildId = ($maxChild['max_id'] ?? 0) + 1;
+        $childId = ($maxChild['max_id'] ?? 0) + 1;
 
-        $childId = $db->insert(
+        $result = $db->insert(
             "INSERT INTO children (childID, userID, display_name, age, avatar) VALUES (?, ?, ?, ?, ?)",
-            [$nextChildId, $userId, $displayName, $age, $avatar]
+            [$childId, $userId, $displayName, $age, $avatar]
         );
 
-        if (!$childId) {
+        if (!$result) {
             jsonResponse([
                 'success' => false,
                 'message' => 'Failed to create child profile'

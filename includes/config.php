@@ -170,10 +170,17 @@ class Database {
     public function insert($sql, $params = []) {
         $stmt = $this->query($sql, $params);
         if (!$stmt) return false;
-        
+
         $insertId = $this->connection->insert_id;
+        $affectedRows = $stmt->affected_rows;
         $stmt->close();
-        return $insertId;
+
+        // If insert_id is 0 (manual ID or no AUTO_INCREMENT), return affected_rows > 0 ? true : false
+        // Otherwise return the auto-generated ID
+        if ($insertId > 0) {
+            return $insertId;
+        }
+        return $affectedRows > 0 ? true : false;
     }
     
     public function update($sql, $params = []) {
