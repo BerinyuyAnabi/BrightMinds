@@ -19,10 +19,10 @@ ini_set('display_errors', 1);
 // DATABASE CONFIGURATION
 // ========================================
 define('DB_HOST', 'localhost');
-define('DB_PORT', 8889);  // Changed the port number to fit mac 
-define('DB_USER', 'root');
-define('DB_PASS', 'root');  // MAMP default password
-define('DB_NAME', 'bright_minds_db');
+define('DB_PORT', 3306);  // Default MySQL port
+define('DB_USER', 'logan.anabi');
+define('DB_PASS', 'Minushbest#0');
+define('DB_NAME', 'webtech_2025A_logan_anabi');
 
 // ========================================
 // APPLICATION SETTINGS
