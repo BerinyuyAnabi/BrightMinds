@@ -104,7 +104,7 @@ switch ($action) {
 
     case 'link-to-parent':
         $childId = getCurrentChildId();
-        $inviteCode = $_POST['code'] ?? '';
+        $inviteCode = $_GET['code'] ?? '';
         // Check if invite code exists
         $parent = $db->selectOne("
             SELECT userID FROM users 

@@ -228,7 +228,6 @@ async function linkToParent() {
         const verifyData = await verifyResponse.json();
         
         if (!verifyData.success) {
-            console.log('Invite code verification failed:', verifyData.success );
             showToast(verifyData.message || 'Invalid or expired code', 'error');
             return;
         }
