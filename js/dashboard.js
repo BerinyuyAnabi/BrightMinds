@@ -227,7 +227,8 @@ async function linkToParent() {
         const verifyResponse = await fetch(`${API_BASE}?action=verify-invite-code&code=${inviteCode}`);
         const verifyData = await verifyResponse.json();
         
-        if (!verifyData.success || !verifyData.valid) {
+        if (!verifyData.success) {
+            console.log('Invite code verification failed:', verifyData.success );
             showToast(verifyData.message || 'Invalid or expired code', 'error');
             return;
         }
