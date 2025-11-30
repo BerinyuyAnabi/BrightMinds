@@ -51,7 +51,8 @@ if ($childId) {
     <style>
         /* Parent Link Section Styles */
         .parent-link-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+            background: blueviolet;
             padding: 20px;
             border-radius: 15px;
             margin: 20px 0;
