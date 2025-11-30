@@ -241,7 +241,7 @@ async function linkToParent() {
         }
         
         // Link to parent
-        const linkResponse = await fetch(`${API_BASE}?action=link-to-parent`, {
+        const linkResponse = await fetch(`${API_BASE}?action=link-to-parent&code=${inviteCode}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

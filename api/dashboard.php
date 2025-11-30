@@ -82,6 +82,48 @@ switch ($action) {
         
         jsonResponse(['success' => true, 'achievements' => $all]);
         break;
+
+    case 'verify-invite-code':
+        $inviteCode = $_GET['code'] ?? '';
+        if (empty($inviteCode)) {
+            jsonResponse(['success' => false, 'message' => 'Invite code is required'], 400);
+        }
+
+        // Check if invite code exists and is valid
+        $codeData = $db->selectOne("
+            SELECT * FROM users 
+            WHERE parent_code = ?
+        ", [$inviteCode]);
+
+        if ($codeData) {
+            jsonResponse(['success' => true, 'message' => 'Invite code is valid', 'parentInfo' => $codeData]);
+        } else {
+            jsonResponse(['success' => false, 'message' => 'Invalid or expired invite code'], 400);
+        }
+        break;
+
+    case 'link-to-parent':
+        $childId = getCurrentChildId();
+        $inviteCode = $_POST['code'] ?? '';
+        // Check if invite code exists
+        $parent = $db->selectOne("
+            SELECT userID FROM users 
+            WHERE parent_code = ?
+        ", [$inviteCode]);
+
+        if (!$parent) {
+            jsonResponse(['success' => false, 'message' => 'Invalid invite code'], 400);
+        }
+
+        // Link child to parent
+        $db->execute("
+            UPDATE children 
+            SET parentID = ? 
+            WHERE childID = ?
+        ", [$parent['userID'], $childId]);
+
+        jsonResponse(['success' => true, 'message' => 'Child linked to parent successfully']);
+        break;
         
     default:
         jsonResponse(['success' => false, 'message' => 'Invalid action'], 400);
