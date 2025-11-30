@@ -24,6 +24,9 @@ switch ($action) {
     case 'end':
         handleEnd();
         break;
+    case 'award':
+        break;
+
     default:
         jsonResponse(['success' => false, 'message' => 'Invalid action'], 400);
 }

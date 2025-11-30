@@ -1,441 +1,294 @@
-/**
- * Child Dashboard JavaScript
- * Handles profile loading, parent linking, and activity display
- */
+// Dashboard JavaScript
 
-const API_BASE = 'api/dashboard.php';
-let currentProfile = null;
-
-// Initialize on page load
+// Check authentication on page load
 window.addEventListener('DOMContentLoaded', () => {
-    // Skip dashboard initialization on quiz pages - they handle their own auth
-    const currentPage = window.location.pathname.split('/').pop();
-    if (currentPage === 'quiz-take.html' || currentPage.includes('quiz-take')) {
-        console.log('Skipping dashboard initialization on quiz page');
-        return;
-    }
-    
     checkAuth();
-    loadProfile();
-    loadParentInfo();
-    loadRecentActivities();
+    loadUserData();
+    initializeDashboard();
 });
 
-let childId = localStorage.getItem('brightMindsSession')['userId'];
-
-
-// Refresh profile when page becomes visible (user returns from game)
-document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && typeof loadProfile === 'function') {
-        console.log('Page became visible, refreshing profile...');
-        // User returned to page, refresh profile to show updated coins
-        setTimeout(() => {
-            loadProfile();
-            loadRecentActivities();
-        }, 100);
-    }
-});
-
-// Also refresh when window gets focus (in case visibilitychange doesn't fire)
-window.addEventListener('focus', () => {
-    console.log('Window focused, refreshing profile...');
-    if (typeof loadProfile === 'function') {
-        setTimeout(() => {
-            loadProfile();
-            loadRecentActivities();
-        }, 100);
-    }
-});
-
-// Refresh when page loads (in case user navigated back via browser back button)
-window.addEventListener('pageshow', (event) => {
-    if (event.persisted) {
-        console.log('Page loaded from cache, refreshing profile...');
-        loadProfile();
-        loadRecentActivities();
-    }
-});
-
-/**
- * Check if user is authenticated
- */
-function checkAuth() {
-    const sessionData = localStorage.getItem('brightMindsSession');
-    if (!sessionData) {
+// Check if user is authenticated via API
+async function checkAuth() {
+    try {
+        const response = await fetch('api/auth.php?action=verify');
+        const data = await response.json();
+        
+        if (!data.success) {
+            // Session expired or not authenticated
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        // Store user data in localStorage for client-side use
+        if (data.user) {
+            localStorage.setItem('brightMindsSession', JSON.stringify({
+                userId: data.user.userId,
+                username: data.user.username,
+                displayName: data.user.displayName,
+                email: data.user.email,
+                role: data.user.role,
+                avatar: data.user.avatar,
+                childID: data.user.childID
+            }));
+        }
+    } catch (error) {
+        console.error('Auth check failed:', error);
         window.location.href = 'index.html';
-        return;
     }
-    
+}
+
+// Load user data
+async function loadUserData() {
+    const sessionData = localStorage.getItem('brightMindsSession');
+    if (!sessionData) return;
+
     try {
         const userData = JSON.parse(sessionData);
-        if (userData.role !== 'child') {
-            // Redirect to appropriate dashboard
-            if (userData.role === 'parent') {
-                window.location.href = 'parent-dashboard.php';
-            } else {
-                window.location.href = 'index.html';
-            }
+
+        // Update user name
+        const userNameEl = document.getElementById('userName');
+        if (userNameEl) {
+            userNameEl.textContent = userData.displayName || userData.username;
         }
+
+        // Update avatar
+        const userAvatarEl = document.getElementById('userAvatar');
+        if (userAvatarEl) {
+            const avatarEmojis = {
+                'owl': '🦉',
+                'fox': '🦊',
+                'rabbit': '🐰',
+                'bear': '🐻',
+                'cat': '🐱',
+                'dog': '🐶'
+            };
+            userAvatarEl.textContent = avatarEmojis[userData.avatar] || '🦉';
+        }
+
+        // Fetch fresh stats from API
+        await loadStats();
+
     } catch (error) {
-        console.error('Error checking auth:', error);
-        window.location.href = 'index.html';
+        console.error('Error loading user data:', error);
     }
 }
 
-/**
- * Load child profile
- */
-async function loadProfile() {
+// Load stats from API
+async function loadStats() {
     try {
-        // Add cache-busting timestamp to ensure fresh data
-        const response = await fetch(`${API_BASE}?action=get-profile&_t=${Date.now()}`);
+        const response = await fetch('api/dashboard.php?action=stats');
         const data = await response.json();
-        
-        console.log('Profile loaded from API:', data);
-        
-        if (data.success && data.profile) {
-            currentProfile = data.profile;
-            console.log('Displaying profile with coins:', data.profile.coins);
-            displayProfile(data.profile);
-        } else {
-            console.error('Failed to load profile:', data.message);
+
+        if (data.success && data.stats) {
+            // Update stats on page
+            updateStats({
+                xp: data.stats.total_xp,
+                level: data.stats.current_level,
+                coins: data.stats.coins,
+                streak: data.stats.streak_days
+            });
         }
     } catch (error) {
-        console.error('Error loading profile:', error);
-        // Use session data as fallback
-        const sessionData = localStorage.getItem('brightMindsSession');
-        if (sessionData) {
-            const userData = JSON.parse(sessionData);
-            document.getElementById('userName').textContent = userData.displayName || 'Explorer';
-        }
+        console.error('Error loading stats:', error);
     }
 }
 
-/**
- * Display profile data
- */
-function displayProfile(profile) {
-    const userNameEl = document.getElementById('userName');
-    const userAvatarEl = document.getElementById('userAvatar');
+// Update user statistics
+function updateStats(userData) {
+    // Update XP
     const xpEl = document.getElementById('xpValue');
-    const levelEl = document.getElementById('levelValue');
-    const coinsEl = document.getElementById('coinsValue');
-    const streakEl = document.getElementById('streakValue');
-    
-    console.log('Updating dashboard display. Coins:', profile.coins, 'XP:', profile.total_xp);
-    
-    if (userNameEl) userNameEl.textContent = profile.display_name || 'Explorer';
-    if (userAvatarEl) userAvatarEl.textContent = profile.avatar || '🦉';
     if (xpEl) {
-        xpEl.textContent = profile.total_xp || 0;
-        console.log('XP element updated to:', xpEl.textContent);
+        animateValue(xpEl, 0, userData.xp || 0, 1000);
     }
+    
+    // Update Level
+    const levelEl = document.getElementById('levelValue');
     if (levelEl) {
-        levelEl.textContent = profile.current_level || 1;
-        console.log('Level element updated to:', levelEl.textContent);
+        animateValue(levelEl, 0, userData.level || 1, 800);
     }
+    
+    // Update Coins
+    const coinsEl = document.getElementById('coinsValue');
     if (coinsEl) {
-        const coinsValue = parseInt(profile.coins) || 0;
-        coinsEl.textContent = coinsValue;
-        console.log('Coins element updated to:', coinsEl.textContent, 'from profile.coins:', profile.coins);
-    } else {
-        console.error('coinsValue element not found in DOM!');
+        animateValue(coinsEl, 0, userData.coins || 0, 1200);
     }
-    if (streakEl) streakEl.textContent = profile.streak_days || 0;
-}
-
-/**
- * Load parent information
- */
-async function loadParentInfo() {
-    try {
-        const response = await fetch(`${API_BASE}?action=get-parent-info`);
-        const data = await response.json();
-        
-        if (data.success) {
-            if (data.hasParent && data.parent) {
-                showLinkedView(data.parent);
-            } else {
-                showNotLinkedView();
-            }
-        }
-    } catch (error) {
-        console.error('Error loading parent info:', error);
-        showNotLinkedView();
+    
+    // Update Streak
+    const streakEl = document.getElementById('streakValue');
+    if (streakEl) {
+        animateValue(streakEl, 0, userData.streak || 0, 600);
     }
 }
 
-/**
- * Show "not linked" view
- */
-function showNotLinkedView() {
-    const parentSection = document.getElementById('parentLinkSection');
-    const notLinkedView = document.getElementById('notLinkedView');
-    const linkedView = document.getElementById('linkedView');
+// Animate number counting
+function animateValue(element, start, end, duration) {
+    const range = end - start;
+    const increment = range / (duration / 16);
+    let current = start;
     
-    if (parentSection && notLinkedView && linkedView) {
-        notLinkedView.classList.remove('hidden');
-        linkedView.classList.add('hidden');
+    const timer = setInterval(() => {
+        current += increment;
+        if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+            current = end;
+            clearInterval(timer);
+        }
+        element.textContent = Math.floor(current);
+    }, 16);
+}
+
+// Initialize dashboard features
+function initializeDashboard() {
+    // Update daily streak
+    updateDailyStreak();
+    
+    // Load recent activities if on dashboard
+    if (document.querySelector('.activity-feed')) {
+        loadRecentActivities();
+    }
+    
+    // Load leaderboard if present
+    if (document.querySelector('.leaderboard')) {
+        loadLeaderboard();
     }
 }
 
-/**
- * Show "linked" view with parent info
- */
-function showLinkedView(parent) {
-    const parentSection = document.getElementById('parentLinkSection');
-    const notLinkedView = document.getElementById('notLinkedView');
-    const linkedView = document.getElementById('linkedView');
-    const parentUsernameEl = document.getElementById('parentUsername');
-    const linkedDateEl = document.getElementById('linkedDate');
-    
-    if (parentSection && notLinkedView && linkedView) {
-        notLinkedView.classList.add('hidden');
-        linkedView.classList.remove('hidden');
-        
-        if (parentUsernameEl) {
-            parentUsernameEl.textContent = parent.username || parent.email || 'Parent';
-        }
-        
-        if (linkedDateEl && parent.linkedDate) {
-            const date = new Date(parent.linkedDate);
-            linkedDateEl.textContent = date.toLocaleDateString();
-        }
-    }
-}
+// Update daily streak
+function updateDailyStreak() {
+    const sessionData = localStorage.getItem('brightMindsSession');
+    if (!sessionData) return;
 
-/**
- * Link to parent account
- */
-async function linkToParent() {
-    const inviteCodeInput = document.getElementById('parentInviteCode');
-    const inviteCode = inviteCodeInput.value.trim().toUpperCase();
-    
-    if (!inviteCode) {
-        showToast('Please enter a parent code', 'error');
-        return;
-    }
-    
-    // Validate format (PAR-XXXXX or LINK-XXXX)
-    if (!inviteCode.match(/^(PAR|LINK)-[A-Z0-9]{4,5}$/)) {
-        showToast('Invalid code format. Use PAR-XXXXX or LINK-XXXX', 'error');
-        return;
-    }
-    
-    try {
-        // First verify the code
-        const verifyResponse = await fetch(`${API_BASE}?action=verify-invite-code&code=${inviteCode}`);
-        const verifyData = await verifyResponse.json();
-        
-        if (!verifyData.success) {
-            showToast(verifyData.message || 'Invalid or expired code', 'error');
-            return;
-        }
-        
-        // Ask for confirmation
-        const parentInfo = verifyData.parentInfo;
-        const confirmMsg = `Link your account to ${parentInfo.username}?\n\nThey will be able to see your progress and activities.`;
-        
-        if (!confirm(confirmMsg)) {
-            return;
-        }
-        
-        // Link to parent
-        const linkResponse = await fetch(`${API_BASE}?action=link-to-parent&code=${inviteCode}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                inviteCode: inviteCode
-            })
-        });
-        
-        const linkData = await linkResponse.json();
-        console.log('Link to parent response:', linkData);
-        
-        if (linkData.success) {
-            showToast('Successfully linked to parent account! 🎉', 'success');
-            inviteCodeInput.value = '';
-            
-            // Reload parent info
-            // setTimeout(() => {
-            //     loadParentInfo();
-            // }, 1500);
+    const userData = JSON.parse(sessionData);
+    const lastLogin = userData.lastLogin || null;
+    const today = new Date().toDateString();
+
+    if (lastLogin !== today) {
+        // Check if it's consecutive day
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        if (lastLogin === yesterday.toDateString()) {
+            userData.streak = (userData.streak || 0) + 1;
+        } else if (lastLogin !== null) {
+            userData.streak = 1;
         } else {
-            showToast(linkData.message || 'Failed to link account', 'error');
+            userData.streak = 1;
         }
-    } catch (error) {
-        console.error('Error linking to parent:', error);
-        showToast('An error occurred. Please try again.', 'error');
-    }
-}
 
-/**
- * Confirm unlink from parent
- */
-function confirmUnlinkParent() {
-    const confirmed = confirm(
-        'Are you sure you want to unlink from your parent account?\n\n' +
-        'Your parent will no longer be able to see your progress.'
-    );
-    
-    if (confirmed) {
-        unlinkFromParent();
-    }
-}
+        userData.lastLogin = today;
+        localStorage.setItem('brightMindsSession', JSON.stringify(userData));
 
-/**
- * Unlink from parent account
- */
-async function unlinkFromParent() {
-    try {
-        const response = await fetch(`${API_BASE}?action=unlink-parent`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showToast('Successfully unlinked from parent account', 'success');
-            
-            // Show not linked view
+        // Show streak celebration with animations
+        if (userData.streak > 1) {
             setTimeout(() => {
-                loadParentInfo();
-            }, 1000);
-        } else {
-            showToast(data.message || 'Failed to unlink account', 'error');
-        }
-    } catch (error) {
-        console.error('Error unlinking from parent:', error);
-        showToast('An error occurred. Please try again.', 'error');
-    }
-}
-
-/**
- * Load recent activities
- */
-async function loadRecentActivities() {
-    const container = document.querySelector('.activity-items');
-    if (!container) return;
-    
-    try {
-        const response = await fetch(`${API_BASE}?action=get-recent-activities&limit=5`);
-        const data = await response.json();
-        
-        if (data.success && data.activities && data.activities.length > 0) {
-            displayActivities(data.activities);
-        } else {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <p>No activities yet. Start your learning journey!</p>
-                </div>
-            `;
-        }
-    } catch (error) {
-        console.error('Error loading activities:', error);
-        container.innerHTML = `
-            <div class="empty-state">
-                <p>Unable to load activities</p>
-            </div>
-        `;
-    }
-}
-
-/**
- * Display activities
- */
-function displayActivities(activities) {
-    const container = document.querySelector('.activity-items');
-    if (!container) return;
-    
-    container.innerHTML = activities.map(activity => {
-        const activityIcon = getActivityIcon(activity.activity_type);
-        const date = new Date(activity.start_time);
-        const timeAgo = formatTimeAgo(date);
-        
-        return `
-            <div class="activity-item">
-                <div class="activity-icon">${activityIcon}</div>
-                <div class="activity-info">
-                    <div class="activity-title">${activity.activity_title || activity.activity_type}</div>
-                    <div class="activity-meta">
-                        <span>⚡ ${activity.xp_earned || 0} XP</span>
-                        <span>🪙 ${activity.coins_earned || 0} coins</span>
-                        <span>${timeAgo}</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-/**
- * Get activity icon based on type
- */
-function getActivityIcon(type) {
-    const icons = {
-        'game': '🎮',
-        'quiz': '📝',
-        'story': '📖',
-        'achievement': '🏆'
-    };
-    return icons[type] || '📚';
-}
-
-/**
- * Format time ago
- */
-function formatTimeAgo(date) {
-    const seconds = Math.floor((new Date() - date) / 1000);
-    
-    const intervals = {
-        year: 31536000,
-        month: 2592000,
-        week: 604800,
-        day: 86400,
-        hour: 3600,
-        minute: 60
-    };
-    
-    for (const [unit, secondsInUnit] of Object.entries(intervals)) {
-        const interval = Math.floor(seconds / secondsInUnit);
-        if (interval >= 1) {
-            return `${interval} ${unit}${interval === 1 ? '' : 's'} ago`;
+                if (window.Celebrations) {
+                    Celebrations.showStreakCelebration(userData.streak);
+                }
+                showToast(`🔥 ${userData.streak} day streak! Keep it up!`, 'success');
+            }, 1500);
         }
     }
-    
-    return 'just now';
 }
 
-/**
- * Logout
- */
-function logout() {
+// Logout function
+async function logout() {
     const confirmed = confirm('Are you sure you want to logout?');
     if (confirmed) {
+        try {
+            // Call logout API to destroy server session
+            await fetch('api/auth.php?action=logout', {
+                method: 'POST'
+            });
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+        
+        // Clear local storage
         localStorage.removeItem('brightMindsSession');
-        showToast('Logged out successfully', 'success');
+        showToast('Goodbye! See you soon! 👋', 'success');
         setTimeout(() => {
             window.location.href = 'index.html';
         }, 1000);
     }
 }
 
-/**
- * Show toast notification
- */
+// Load recent activities
+function loadRecentActivities() {
+    const activities = [
+        { icon: '🎮', title: 'Completed Memory Match', reward: '+50 XP', time: '2 hours ago' },
+        { icon: '📝', title: 'Finished Math Quiz', reward: '+80 XP', time: '5 hours ago' },
+        { icon: '📖', title: 'Read "The Brave Elephant"', reward: '+30 XP', time: '1 day ago' },
+        { icon: '🏆', title: 'Unlocked Achievement', reward: '+100 Coins', time: '2 days ago' }
+    ];
+    
+    const feedContainer = document.querySelector('.activity-feed');
+    if (!feedContainer) return;
+    
+    const itemsHTML = activities.map(activity => `
+        <div class="activity-item">
+            <div class="activity-item-icon">${activity.icon}</div>
+            <div class="activity-item-content">
+                <div class="activity-item-title">${activity.title}</div>
+                <div class="activity-item-time">${activity.time}</div>
+            </div>
+            <div class="activity-item-reward">${activity.reward}</div>
+        </div>
+    `).join('');
+    
+    const existingItems = feedContainer.querySelector('.activity-items');
+    if (existingItems) {
+        existingItems.innerHTML = itemsHTML;
+    }
+}
+
+// Load leaderboard
+function loadLeaderboard() {
+    const leaderboardData = [
+        { rank: 1, name: 'Emma Explorer', avatar: '🦉', score: '2,450 XP' },
+        { rank: 2, name: 'Sam Scientist', avatar: '🦊', score: '2,180 XP' },
+        { rank: 3, name: 'Lucy Learner', avatar: '🐰', score: '1,950 XP' },
+        { rank: 4, name: 'Max Mathematics', avatar: '🻭', score: '1,720 XP' },
+        { rank: 5, name: 'Olivia Observer', avatar: '🐱', score: '1,580 XP' }
+    ];
+    
+    const leaderboardContainer = document.querySelector('.leaderboard');
+    if (!leaderboardContainer) return;
+    
+    const itemsHTML = leaderboardData.map(item => {
+        let rankClass = '';
+        if (item.rank === 1) rankClass = 'gold';
+        else if (item.rank === 2) rankClass = 'silver';
+        else if (item.rank === 3) rankClass = 'bronze';
+        
+        return `
+            <div class="leaderboard-item">
+                <div class="leaderboard-rank ${rankClass}">${item.rank}</div>
+                <div class="leaderboard-avatar">${item.avatar}</div>
+                <div class="leaderboard-info">
+                    <div class="leaderboard-name">${item.name}</div>
+                    <div class="leaderboard-score">${item.score}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    const existingItems = leaderboardContainer.querySelector('.leaderboard-items');
+    if (existingItems) {
+        existingItems.innerHTML = itemsHTML;
+    } else {
+        leaderboardContainer.innerHTML += itemsHTML;
+    }
+}
+
+// Show toast notification
 function showToast(message, type = 'success') {
+    // Create toast if it doesn't exist
     let toast = document.getElementById('toast');
     if (!toast) {
         toast = document.createElement('div');
         toast.id = 'toast';
         toast.className = 'toast hidden';
         toast.innerHTML = `
-            <span class="toast-icon">✔</span>
+            <span class="toast-icon">✓</span>
             <span class="toast-message"></span>
         `;
         document.body.appendChild(toast);
@@ -446,6 +299,7 @@ function showToast(message, type = 'success') {
         toastMessage.textContent = message;
     }
     
+    // Set type
     toast.className = 'toast';
     if (type === 'error') {
         toast.classList.add('toast-error');
@@ -453,211 +307,65 @@ function showToast(message, type = 'success') {
         toast.classList.add('toast-warning');
     }
     
+    // Show toast
     toast.classList.remove('hidden');
     
+    // Hide after 3 seconds
     setTimeout(() => {
         toast.classList.add('hidden');
     }, 3000);
 }
 
-// Allow Enter key to submit parent code
-document.addEventListener('DOMContentLoaded', () => {
-    const parentCodeInput = document.getElementById('parentInviteCode');
-    if (parentCodeInput) {
-        parentCodeInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                linkToParent();
-            }
-        });
-    }
-});
+// Award XP and update user stats
+function awardXP(xp, coins = 0) {
+    const sessionData = localStorage.getItem('brightMindsSession');
+    if (!sessionData) return;
 
-/**
- * Start a game session (called when game begins)
- * @param {number} gameId - The game ID (1-5)
- * @returns {Promise<number>} - Session ID
- */
-async function startGameSession(gameId) {
-    try {
-        const response = await fetch('api/games.php?action=start', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ gameId: gameId })
-        });
-        
-        const data = await response.json();
-        if (data.success) {
-            return data.sessionId;
-        }
-        console.error('Failed to start game session:', data.message);
-        return null;
-    } catch (error) {
-        console.error('Error starting game session:', error);
-        return null;
-    }
-}
+    const userData = JSON.parse(sessionData);
+    const oldLevel = userData.level || 1;
 
-/**
- * Award XP and coins for game completion
- * This function saves the game session and awards rewards properly
- * @param {number} xpAmount - XP to award
- * @param {number} coinAmount - Coins to award
- * @param {number} gameId - Game ID (1-5) - Required
- * @param {number} sessionId - Session ID (if game session was started)
- * @param {number} score - Final score (0-100)
- * @param {boolean} completed - Whether game was completed
- */
-async function awardXP(xpAmount, coinAmount, gameId = null, sessionId = null, score = 0, completed = true) {
-    try {
-        // Parse gameId if it's provided
-        if (gameId !== null && gameId !== undefined) {
-            gameId = parseInt(gameId);
-        }
-        
-        console.log('awardXP called with:', { xpAmount, coinAmount, gameId, sessionId, score });
-        console.log('gameId type:', typeof gameId, 'value:', gameId);
-        
-        // Determine game ID from URL if not provided or invalid
-        if (!gameId || isNaN(gameId)) {
-            // Try multiple URL patterns
-            const pathname = window.location.pathname;
-            const href = window.location.href;
-            console.log('Trying to detect game ID from pathname:', pathname);
-            console.log('Trying to detect game ID from href:', href);
-            
-            // Pattern 1: /games/game1.html or games/game1.html
-            // let gameMatch = pathname.match(/(?:games\/|games\\/)game(\d+)\.html/i);
-            let gameMatch = pathname.match(/(?:games\/|games\\)game(\d+)\.html/i);
+    // Add XP
+    userData.xp = (userData.xp || 0) + xp;
 
-            if (!gameMatch) {
-                // Pattern 2: /game1.html
-                gameMatch = pathname.match(/game(\d+)\.html/i);
-            }
-            if (!gameMatch) {
-                // Pattern 3: From href
-                gameMatch = href.match(/game(\d+)\.html/i);
-            }
-            
-            if (gameMatch) {
-                gameId = parseInt(gameMatch[1]);
-                console.log('Auto-detected game ID from URL:', gameId);
-            }
+    // Add coins
+    userData.coins = (userData.coins || 0) + coins;
+
+    // Calculate level
+    const newLevel = Math.floor(userData.xp / 100) + 1;
+    const leveledUp = newLevel > oldLevel;
+    userData.level = newLevel;
+
+    // Save updated data
+    localStorage.setItem('brightMindsSession', JSON.stringify(userData));
+
+    // Update UI
+    updateStats(userData);
+
+    // Show celebration animations
+    if (window.Celebrations) {
+        // Show confetti and success effects
+        Celebrations.showSuccess('Great Job!', xp, coins);
+
+        // Show level up modal if leveled up
+        if (leveledUp) {
+            setTimeout(() => {
+                Celebrations.showLevelUp(newLevel);
+            }, 1500);
         }
-        
-        // Validate game ID
-        if (!gameId || isNaN(gameId) || gameId < 1 || gameId > 10) {
-            console.error('Invalid or missing game ID:', gameId);
-            console.error('Current URL:', window.location.href);
-            console.error('Current pathname:', window.location.pathname);
-            alert('Error: Game ID not found. Please contact support if this continues. URL: ' + window.location.href);
-            return;
-        }
-        
-        if (!xpAmount && !coinAmount) {
-            console.warn('No rewards to award');
-            return;
-        }
-        
-        // If we have a session ID, use the proper API endpoint with custom rewards
-        if (sessionId) {
-            console.log('Using session endpoint with sessionId:', sessionId);
-            const response = await fetch('api/games.php?action=end', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    sessionId: sessionId,
-                    score: score,
-                    completed: completed,
-                    xpEarned: xpAmount,
-                    coinsEarned: coinAmount
-                })
-            });
-            
-            const data = await response.json();
-            console.log('Session endpoint response:', data);
-            
-            if (data.success) {
-                // Update local storage with new stats
-                updateLocalStats(data.stats);
-                console.log('Updated stats:', data.stats);
-                
-                // Refresh dashboard if on dashboard page
-                if (typeof loadProfile === 'function') {
-                    loadProfile();
-                }
-                
-                return data;
-            } else {
-                console.error('Session endpoint failed:', data.message);
-            }
-        }
-        
-        // Use the simpler award endpoint for games without sessions
-        const requestBody = {
-            gameId: parseInt(gameId), // Ensure it's an integer
-            xpEarned: parseInt(xpAmount) || 0,
-            coinsEarned: parseInt(coinAmount) || 0,
-            score: parseFloat(score) || (xpAmount > 0 ? 100 : 0),
-            completed: completed !== false
-        };
-        
-        console.log('Using award endpoint with gameId:', gameId);
-        console.log('Request body being sent:', requestBody);
-        
-        const response = await fetch('api/games.php?action=award', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestBody)
-        });
-        
-        const data = await response.json();
-        console.log('Award endpoint response:', data);
-        
-        if (data.success) {
-            // Update local storage with new stats
-            updateLocalStats(data.stats);
-            console.log('Successfully awarded rewards. Updated stats:', data.stats);
-            
-            // Refresh dashboard if on dashboard page
-            if (typeof loadProfile === 'function') {
-                loadProfile();
-            }
-            
-            return data;
+    } else {
+        // Fallback to toast notifications
+        if (leveledUp) {
+            showToast(`🎉 Level Up! You're now Level ${newLevel}!`, 'success');
+            setTimeout(() => {
+                showToast(`+${xp} XP, +${coins} Coins earned!`, 'success');
+            }, 2000);
         } else {
-            console.error('Failed to award XP:', data.message);
-            alert('Failed to save rewards: ' + (data.message || 'Unknown error'));
+            showToast(`+${xp} XP, +${coins} Coins earned!`, 'success');
         }
-    } catch (error) {
-        console.error('Error awarding XP:', error);
-        alert('Error saving rewards. Please check console for details.');
     }
 }
 
-/**
- * Update local storage stats
- */
-function updateLocalStats(stats) {
-    try {
-        const sessionData = localStorage.getItem('brightMindsSession');
-        if (sessionData) {
-            const userData = JSON.parse(sessionData);
-            if (stats) {
-                userData.xp = stats.total_xp || userData.xp || 0;
-                userData.level = stats.current_level || userData.level || 1;
-                userData.coins = stats.coins || userData.coins || 0;
-                userData.streak = stats.streak_days || userData.streak || 0;
-                localStorage.setItem('brightMindsSession', JSON.stringify(userData));
-            }
-        }
-    } catch (error) {
-        console.error('Error updating local stats:', error);
-    }
-}
+// Export functions for use in other scripts
+window.awardXP = awardXP;
+window.showToast = showToast;
+window.logout = logout;
