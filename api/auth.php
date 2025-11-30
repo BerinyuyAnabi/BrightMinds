@@ -101,12 +101,25 @@ function handleRegister() {
     
     // Hash password
     $hashedPassword = hashPassword($password);
-    
+
+    // Generate parent code if role is parent (replaces database trigger)
+    $parentCode = null;
+    if ($role === 'parent') {
+        $parentCode = 'PAR-' . strtoupper(substr(md5(uniqid(rand(), true)), 0, 5));
+    }
+
     // Insert user
-    $userId = $db->insert(
-        "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
-        [$username, $email, $hashedPassword, $role]
-    );
+    if ($role === 'parent') {
+        $userId = $db->insert(
+            "INSERT INTO users (username, email, password, role, parent_code) VALUES (?, ?, ?, ?, ?)",
+            [$username, $email, $hashedPassword, $role, $parentCode]
+        );
+    } else {
+        $userId = $db->insert(
+            "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
+            [$username, $email, $hashedPassword, $role]
+        );
+    }
     
     if (!$userId) {
         jsonResponse([

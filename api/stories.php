@@ -36,7 +36,7 @@ switch ($action) {
             VALUES (?, 'story', ?, NOW() - INTERVAL 60 SECOND, NOW(), 60, ?, ?, 1)
         ", [$childId, $storyId, $story['xp_reward'], $story['coin_reward']]);
         
-        $db->query("CALL award_xp(?, ?, ?)", [$childId, $story['xp_reward'], $story['coin_reward']]);
+        award_xp($childId, $story['xp_reward'], $story['coin_reward']);
         
         $child = $db->selectOne("SELECT total_xp, current_level, coins FROM children WHERE childID = ?", [$childId]);
         

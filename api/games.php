@@ -173,8 +173,8 @@ function handleEnd() {
         WHERE sessionID = ?
     ", [$duration, $score, $xpEarned, $coinsEarned, $completed, $sessionId]);
     
-    // Award XP and coins
-    $db->query("CALL award_xp(?, ?, ?)", [$childId, $xpEarned, $coinsEarned]);
+    // Award XP and coins (using PHP function instead of stored procedure)
+    award_xp($childId, $xpEarned, $coinsEarned);
     
     // Get updated child stats
     $child = $db->selectOne("

@@ -198,8 +198,8 @@ function handleSubmit() {
         VALUES (?, 'quiz', ?, NOW() - INTERVAL ? SECOND, NOW(), ?, ?, ?, ?, 1)
     ", [$childId, $quizId, $timeSpent, $timeSpent, $scorePercentage, $xpEarned, $coinsEarned]);
     
-    // Award XP and coins
-    $db->query("CALL award_xp(?, ?, ?)", [$childId, $xpEarned, $coinsEarned]);
+    // Award XP and coins (using PHP function instead of stored procedure)
+    award_xp($childId, $xpEarned, $coinsEarned);
     
     // Get updated stats
     $child = $db->selectOne("

@@ -244,6 +244,51 @@ function generateToken($length = 32) {
 }
 
 /**
+ * Award XP and coins to a child (replaces stored procedure)
+ * This function updates the child's XP, coins, and level
+ */
+function award_xp($childID, $xp_amount, $coin_amount) {
+    $db = getDB();
+
+    // Get current stats
+    $child = $db->selectOne("
+        SELECT total_xp, current_level
+        FROM children
+        WHERE childID = ?
+    ", [$childID]);
+
+    if (!$child) {
+        return false;
+    }
+
+    $current_xp = $child['total_xp'];
+    $current_level = $child['current_level'];
+
+    // Update XP and coins
+    $db->query("
+        UPDATE children
+        SET total_xp = total_xp + ?,
+            coins = coins + ?
+        WHERE childID = ?
+    ", [$xp_amount, $coin_amount, $childID]);
+
+    // Calculate new level (100 XP per level)
+    $new_xp = $current_xp + $xp_amount;
+    $new_level = floor($new_xp / 100) + 1;
+
+    // Update level if it changed
+    if ($new_level > $current_level) {
+        $db->query("
+            UPDATE children
+            SET current_level = ?
+            WHERE childID = ?
+        ", [$new_level, $childID]);
+    }
+
+    return true;
+}
+
+/**
  * Sanitize input
  */
 function sanitizeInput($data) {
