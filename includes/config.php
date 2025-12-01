@@ -419,9 +419,28 @@ function getCurrentUserId() {
 
 /**
  * Get current child ID
+ * If not in session but user is logged in, try to fetch from database
  */
 function getCurrentChildId() {
-    return $_SESSION['child_id'] ?? null;
+    // First check session
+    if (isset($_SESSION['child_id']) && $_SESSION['child_id']) {
+        return $_SESSION['child_id'];
+    }
+
+    // Fallback: Try to get from database using user_id
+    $userId = getCurrentUserId();
+    if ($userId) {
+        $db = getDB();
+        $child = $db->selectOne("SELECT childID FROM children WHERE userID = ?", [$userId]);
+        if ($child && isset($child['childID'])) {
+            // Store in session for future requests
+            $_SESSION['child_id'] = $child['childID'];
+            error_log("getCurrentChildId: Retrieved childID from database: {$child['childID']}");
+            return $child['childID'];
+        }
+    }
+
+    return null;
 }
 
 /**

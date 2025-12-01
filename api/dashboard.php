@@ -15,10 +15,12 @@ switch ($action) {
     case 'get-profile':
         $childId = getCurrentChildId();
 
-        error_log("get-profile: childID from session = " . ($childId ?? 'NULL'));
-        error_log("get-profile: SESSION contents = " . print_r($_SESSION, true));
+        error_log("get-profile: childID = " . ($childId ?? 'NULL'));
+        error_log("get-profile: user_id = " . ($_SESSION['user_id'] ?? 'NULL'));
+        error_log("get-profile: role = " . ($_SESSION['role'] ?? 'NULL'));
 
         if (!$childId) {
+            error_log("get-profile: No childID found even after database fallback");
             jsonResponse(['success' => false, 'message' => 'Child ID not found in session'], 400);
         }
 

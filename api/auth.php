@@ -380,16 +380,17 @@ function createSession($userId, $role, $childId = null, $rememberMe = false) {
         ]
     );
     
-    // Set session variables
-    session_start();
-
+    // Set session variables (session already started in config.php)
     $_SESSION['user_id'] = $userId;
     $_SESSION['role'] = $role;
     $_SESSION['session_token'] = $sessionToken;
-    
+
+    // IMPORTANT: Always set child_id for child role
     if ($childId) {
         $_SESSION['child_id'] = $childId;
     }
+
+    error_log("Session created - UserID: $userId, Role: $role, ChildID: " . ($childId ?? 'NULL'));
     
     // Set session cookie lifetime
     if ($rememberMe) {
