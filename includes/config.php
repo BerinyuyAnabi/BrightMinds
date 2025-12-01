@@ -264,41 +264,61 @@ function generateToken($length = 32) {
 function award_xp($childID, $xp_amount, $coin_amount) {
     $db = getDB();
 
+    error_log("award_xp called: childID=$childID, xp=$xp_amount, coins=$coin_amount");
+
     // Get current stats
     $child = $db->selectOne("
-        SELECT total_xp, current_level
+        SELECT total_xp, current_level, coins
         FROM children
         WHERE childID = ?
     ", [$childID]);
 
     if (!$child) {
+        error_log("award_xp: Child not found with ID $childID");
         return false;
     }
 
     $current_xp = $child['total_xp'];
     $current_level = $child['current_level'];
+    $current_coins = $child['coins'];
+
+    error_log("award_xp: Current stats - XP: $current_xp, Level: $current_level, Coins: $current_coins");
 
     // Update XP and coins
-    $db->query("
+    $result = $db->query("
         UPDATE children
         SET total_xp = total_xp + ?,
             coins = coins + ?
         WHERE childID = ?
     ", [$xp_amount, $coin_amount, $childID]);
 
+    if (!$result) {
+        error_log("award_xp: Failed to update XP and coins");
+        return false;
+    }
+
     // Calculate new level (100 XP per level)
     $new_xp = $current_xp + $xp_amount;
     $new_level = floor($new_xp / 100) + 1;
 
+    error_log("award_xp: New XP: $new_xp, New Level: $new_level");
+
     // Update level if it changed
     if ($new_level > $current_level) {
-        $db->query("
+        $levelResult = $db->query("
             UPDATE children
             SET current_level = ?
             WHERE childID = ?
         ", [$new_level, $childID]);
+
+        if (!$levelResult) {
+            error_log("award_xp: Failed to update level");
+        } else {
+            error_log("award_xp: Level updated to $new_level");
+        }
     }
 
+    error_log("award_xp: Update completed successfully");
     return true;
 }
 

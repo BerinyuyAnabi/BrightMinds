@@ -220,17 +220,22 @@ function handleAward() {
     $completed = boolval($input['completed'] ?? true);
     $childId = getCurrentChildId();
 
+    error_log("handleAward: Received request - childID=$childId, gameID=$gameId, xp=$xpEarned, coins=$coinsEarned");
+
     if (!$childId) {
+        error_log("handleAward: Missing child ID");
         jsonResponse(['success' => false, 'message' => 'Child ID required'], 400);
     }
 
     if (!$gameId) {
+        error_log("handleAward: Missing game ID");
         jsonResponse(['success' => false, 'message' => 'Game ID required'], 400);
     }
 
     // Verify game exists
     $game = $db->selectOne("SELECT * FROM games WHERE gameID = ? AND is_active = 1", [$gameId]);
     if (!$game) {
+        error_log("handleAward: Game not found - gameID=$gameId");
         jsonResponse(['success' => false, 'message' => 'Invalid game ID'], 404);
     }
 
@@ -238,14 +243,28 @@ function handleAward() {
     $maxSession = $db->selectOne("SELECT MAX(sessionID) as max_id FROM play_sessions");
     $nextSessionId = ($maxSession['max_id'] ?? 0) + 1;
 
+    error_log("handleAward: Creating play session with ID $nextSessionId");
+
     // Create play session record
-    $db->insert("
+    $sessionResult = $db->insert("
         INSERT INTO play_sessions (sessionID, childID, activity_type, activity_id, start_time, end_time, score, xp_earned, coins_earned, completed)
         VALUES (?, ?, 'game', ?, NOW(), NOW(), ?, ?, ?, ?)
     ", [$nextSessionId, $childId, $gameId, $score, $xpEarned, $coinsEarned, $completed]);
 
+    if (!$sessionResult) {
+        error_log("handleAward: Failed to create play session");
+        jsonResponse(['success' => false, 'message' => 'Failed to create play session'], 500);
+    }
+
+    error_log("handleAward: Calling award_xp");
+
     // Award XP and coins
-    award_xp($childId, $xpEarned, $coinsEarned);
+    $awardResult = award_xp($childId, $xpEarned, $coinsEarned);
+
+    if (!$awardResult) {
+        error_log("handleAward: award_xp failed");
+        jsonResponse(['success' => false, 'message' => 'Failed to award XP and coins'], 500);
+    }
 
     // Get updated child stats
     $child = $db->selectOne("
@@ -254,8 +273,12 @@ function handleAward() {
         WHERE childID = ?
     ", [$childId]);
 
+    error_log("handleAward: Updated stats - XP: {$child['total_xp']}, Level: {$child['current_level']}, Coins: {$child['coins']}");
+
     // Check for achievements
     checkAchievements($childId);
+
+    error_log("handleAward: Sending success response");
 
     jsonResponse([
         'success' => true,

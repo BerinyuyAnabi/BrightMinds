@@ -19,10 +19,14 @@ window.addEventListener('DOMContentLoaded', () => {
     loadProfile();
     loadParentInfo();
     loadRecentActivities();
+}); 
+
+// Listen for profile update events (triggered when rewards are awarded)
+window.addEventListener('profileUpdated', () => {
+    console.log('Profile update event received, refreshing...');
+    loadProfile();
+    loadRecentActivities();
 });
-
-let childId = localStorage.getItem('brightMindsSession')['userId'];
-
 
 // Refresh profile when page becomes visible (user returns from game)
 document.addEventListener('visibilitychange', () => {
@@ -740,10 +744,15 @@ async function awardXP(xp, coins = 0) {
         const newLevel = userData.level;
         const leveledUp = newLevel > oldLevel;
 
-        // Update UI
+        // Update UI immediately
         if (typeof updateStats === 'function') {
             updateStats(userData);
         }
+
+        // Dispatch custom event to notify dashboard to refresh
+        window.dispatchEvent(new CustomEvent('profileUpdated', {
+            detail: { stats: data.stats }
+        }));
 
         // Show celebration animations
         if (window.Celebrations) {
@@ -759,7 +768,7 @@ async function awardXP(xp, coins = 0) {
         } else {
             // Fallback to toast notifications
             if (leveledUp) {
-                showToast(`🎉 Level Up! You're now Level ${newLevel}!`, 'success');
+                showToast(`Level Up! You're now Level ${newLevel}!`, 'success');
                 setTimeout(() => {
                     showToast(`+${xp} XP, +${coins} Coins earned!`, 'success');
                 }, 2000);
@@ -768,12 +777,14 @@ async function awardXP(xp, coins = 0) {
             }
         }
 
-        // Refresh profile to show updated coins
+        // Refresh profile to show updated stats
         setTimeout(() => {
             if (typeof loadProfile === 'function') {
                 loadProfile();
             }
         }, 500);
+
+        return data;
 
     } catch (error) {
         console.error('Error awarding XP:', error);
