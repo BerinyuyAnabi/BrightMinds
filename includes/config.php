@@ -283,16 +283,15 @@ function award_xp($childID, $xp_amount, $coin_amount) {
 
     error_log("award_xp: Current stats - XP: $current_xp, Level: $current_level, Coins: $current_coins");
 
-    // Update XP, coins, and last activity date (for streak tracking)
-    $result = $db->query("
+    // Update XP and coins (do NOT update last_activity_date here - let update_streak handle it)
+    $result = $db->update("
         UPDATE children
         SET total_xp = total_xp + ?,
-            coins = coins + ?,
-            last_activity_date = CURDATE()
+            coins = coins + ?
         WHERE childID = ?
     ", [$xp_amount, $coin_amount, $childID]);
 
-    if (!$result) {
+    if ($result === false) {
         error_log("award_xp: Failed to update XP and coins");
         return false;
     }
@@ -305,13 +304,13 @@ function award_xp($childID, $xp_amount, $coin_amount) {
 
     // Update level if it changed
     if ($new_level > $current_level) {
-        $levelResult = $db->query("
+        $levelResult = $db->update("
             UPDATE children
             SET current_level = ?
             WHERE childID = ?
         ", [$new_level, $childID]);
 
-        if (!$levelResult) {
+        if ($levelResult === false) {
             error_log("award_xp: Failed to update level");
         } else {
             error_log("award_xp: Level updated to $new_level");
@@ -354,7 +353,7 @@ function update_streak($childID) {
     } elseif ($lastActivity === date('Y-m-d', strtotime('-1 day'))) {
         // Logged in yesterday, increment streak
         $newStreak = $currentStreak + 1;
-        $db->query("
+        $db->update("
             UPDATE children
             SET streak_days = ?,
                 last_activity_date = ?
@@ -363,7 +362,7 @@ function update_streak($childID) {
         return $newStreak;
     } else {
         // Streak broken, reset to 1
-        $db->query("
+        $db->update("
             UPDATE children
             SET streak_days = 1,
                 last_activity_date = ?
