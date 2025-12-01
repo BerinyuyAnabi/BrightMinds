@@ -666,8 +666,12 @@ async function awardXP(xp, coins = 0) {
             return;
         }
 
+        // Determine API path based on current location
+        // If we're in /games/ folder, use ../api/, otherwise use api/
+        const apiPath = window.location.pathname.includes('/games/') ? '../api/games.php' : 'api/games.php';
+
         // Send rewards to backend API
-        const response = await fetch('api/games.php?action=award', {
+        const response = await fetch(`${apiPath}?action=award`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -756,16 +760,16 @@ async function awardXP(xp, coins = 0) {
  */
 function updateStats(userData) {
     if (document.getElementById('xpValue')) {
-        document.getElementById('xpValue').textContent = userData.xp || 0;
+        document.getElementById('xpValue').textContent = userData.total_xp || userData.xp || 0;
     }
     if (document.getElementById('levelValue')) {
-        document.getElementById('levelValue').textContent = userData.level || 1;
+        document.getElementById('levelValue').textContent = userData.current_level || userData.level || 1;
     }
     if (document.getElementById('coinsValue')) {
         document.getElementById('coinsValue').textContent = userData.coins || 0;
     }
     if (document.getElementById('streakValue')) {
-        document.getElementById('streakValue').textContent = userData.streak || 0;
+        document.getElementById('streakValue').textContent = userData.streak_days || userData.streak || 0;
     }
 }
 
