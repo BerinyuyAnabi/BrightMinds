@@ -14,7 +14,14 @@ window.addEventListener('DOMContentLoaded', () => {
         console.log('Skipping dashboard initialization on quiz page');
         return;
     }
-    
+
+    // Check if we have a session before initializing
+    const sessionData = localStorage.getItem('brightMindsSession');
+    if (!sessionData) {
+        console.log('No session found, skipping dashboard initialization');
+        return;
+    }
+
     checkAuth();
     loadProfile();
     loadParentInfo();
@@ -23,6 +30,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // Listen for profile update events (triggered when rewards are awarded)
 window.addEventListener('profileUpdated', () => {
+    // Only refresh if we have a valid session
+    const sessionData = localStorage.getItem('brightMindsSession');
+    if (!sessionData) return;
+
     console.log('Profile update event received, refreshing...');
     loadProfile();
     loadRecentActivities();
@@ -30,6 +41,10 @@ window.addEventListener('profileUpdated', () => {
 
 // Refresh profile when page becomes visible (user returns from game)
 document.addEventListener('visibilitychange', () => {
+    // Only refresh if we have a valid session
+    const sessionData = localStorage.getItem('brightMindsSession');
+    if (!sessionData) return;
+
     if (!document.hidden && typeof loadProfile === 'function') {
         console.log('Page became visible, refreshing profile...');
         // User returned to page, refresh profile to show updated coins
@@ -42,6 +57,10 @@ document.addEventListener('visibilitychange', () => {
 
 // Also refresh when window gets focus (in case visibilitychange doesn't fire)
 window.addEventListener('focus', () => {
+    // Only refresh if we have a valid session
+    const sessionData = localStorage.getItem('brightMindsSession');
+    if (!sessionData) return;
+
     console.log('Window focused, refreshing profile...');
     if (typeof loadProfile === 'function') {
         setTimeout(() => {
@@ -53,6 +72,10 @@ window.addEventListener('focus', () => {
 
 // Refresh when page loads (in case user navigated back via browser back button)
 window.addEventListener('pageshow', (event) => {
+    // Only refresh if we have a valid session
+    const sessionData = localStorage.getItem('brightMindsSession');
+    if (!sessionData) return;
+
     if (event.persisted) {
         console.log('Page loaded from cache, refreshing profile...');
         loadProfile();
