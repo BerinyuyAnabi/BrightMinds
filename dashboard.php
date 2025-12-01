@@ -166,9 +166,6 @@ if ($childId) {
         <!-- Parent Linking Section -->
         <div class="parent-link-section" id="parentLinkSection">
 <?php
-// session_start();
-$childId = $_SESSION['user_id'];
-
 // Check if parent is linked
 if (!isParentLinked($childId)) { 
     // SHOW IF NOT LINKED
