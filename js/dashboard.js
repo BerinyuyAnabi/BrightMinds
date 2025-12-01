@@ -441,11 +441,24 @@ function formatTimeAgo(date) {
 /**
  * Logout
  */
-function logout() {
+async function logout() {
     const confirmed = confirm('Are you sure you want to logout?');
     if (confirmed) {
+        try {
+            // Call logout API to destroy server session
+            await fetch('api/auth.php?action=logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+        } catch (error) {
+            console.error('Logout API error:', error);
+        }
+
+        // Remove local session data
         localStorage.removeItem('brightMindsSession');
+
         showToast('Logged out successfully', 'success');
+
         setTimeout(() => {
             window.location.href = 'index.html';
         }, 1000);
