@@ -645,19 +645,28 @@ async function startGameSession(gameId) {
 
 
 async function awardXP(xp, coins = 0) {
+    console.log('=== awardXP called ===');
+    console.log('XP:', xp, 'Coins:', coins);
+
     const sessionData = localStorage.getItem('brightMindsSession');
-    if (!sessionData) return;
+    if (!sessionData) {
+        console.error('No session data found!');
+        return;
+    }
 
     const userData = JSON.parse(sessionData);
+    console.log('Current user data:', userData);
     const oldLevel = userData.level || 1;
 
     try {
         // Detect game ID from URL
         let gameId = null;
         const pathname = window.location.pathname;
+        console.log('Current pathname:', pathname);
         const gameMatch = pathname.match(/game(\d+)\.html/i);
         if (gameMatch) {
             gameId = parseInt(gameMatch[1]);
+            console.log('Detected game ID:', gameId);
         }
 
         if (!gameId) {
@@ -669,6 +678,7 @@ async function awardXP(xp, coins = 0) {
         // Determine API path based on current location
         // If we're in /games/ folder, use ../api/, otherwise use api/
         const apiPath = window.location.pathname.includes('/games/') ? '../api/games.php' : 'api/games.php';
+        console.log('Using API path:', apiPath);
 
         // Send rewards to backend API
         const response = await fetch(`${apiPath}?action=award`, {
@@ -685,8 +695,19 @@ async function awardXP(xp, coins = 0) {
             })
         });
 
+        // Check if response is ok
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('HTTP Error:', response.status, errorText);
+            showToast(`Server error: ${response.status}`, 'error');
+            return;
+        }
+
         const data = await response.json();
-        console.log('Award API response:', data);
+        console.log('=== Award API response ===');
+        console.log('Full response:', data);
+        console.log('Success:', data.success);
+        console.log('Stats:', data.stats);
 
         if (!data.success) {
             console.error('Failed to award rewards:', data.message);
@@ -694,14 +715,20 @@ async function awardXP(xp, coins = 0) {
             return;
         }
 
+        console.log('API call successful!');
+
         // Update localStorage with server response
         if (data.stats) {
+            console.log('Updating localStorage with server stats...');
+            console.log('Before - coins:', userData.coins, 'xp:', userData.xp);
             userData.xp = data.stats.total_xp;
             userData.level = data.stats.current_level;
             userData.coins = data.stats.coins;
             userData.streak = data.stats.streak_days;
             localStorage.setItem('brightMindsSession', JSON.stringify(userData));
+            console.log('After - coins:', userData.coins, 'xp:', userData.xp);
         } else {
+            console.warn('No stats in response, using fallback...');
             // Fallback: update locally
             userData.xp = (userData.xp || 0) + xp;
             userData.coins = (userData.coins || 0) + coins;
@@ -759,17 +786,26 @@ async function awardXP(xp, coins = 0) {
  * Update stats display in UI
  */
 function updateStats(userData) {
+    console.log('updateStats called with:', userData);
     if (document.getElementById('xpValue')) {
-        document.getElementById('xpValue').textContent = userData.total_xp || userData.xp || 0;
+        const xpValue = userData.total_xp || userData.xp || 0;
+        document.getElementById('xpValue').textContent = xpValue;
+        console.log('Updated XP display to:', xpValue);
     }
     if (document.getElementById('levelValue')) {
-        document.getElementById('levelValue').textContent = userData.current_level || userData.level || 1;
+        const levelValue = userData.current_level || userData.level || 1;
+        document.getElementById('levelValue').textContent = levelValue;
+        console.log('Updated level display to:', levelValue);
     }
     if (document.getElementById('coinsValue')) {
-        document.getElementById('coinsValue').textContent = userData.coins || 0;
+        const coinsValue = userData.coins || 0;
+        document.getElementById('coinsValue').textContent = coinsValue;
+        console.log('Updated coins display to:', coinsValue);
     }
     if (document.getElementById('streakValue')) {
-        document.getElementById('streakValue').textContent = userData.streak_days || userData.streak || 0;
+        const streakValue = userData.streak_days || userData.streak || 0;
+        document.getElementById('streakValue').textContent = streakValue;
+        console.log('Updated streak display to:', streakValue);
     }
 }
 
