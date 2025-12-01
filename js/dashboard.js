@@ -651,47 +651,123 @@ async function awardXP(xp, coins = 0) {
     const userData = JSON.parse(sessionData);
     const oldLevel = userData.level || 1;
 
-    // Add XP
-    userData.xp = (userData.xp || 0) + xp;
-
-    // Add coins
-    userData.coins = (userData.coins || 0) + coins;
-
-    // Calculate level
-    const newLevel = Math.floor(userData.xp / 100) + 1;
-    const leveledUp = newLevel > oldLevel;
-    userData.level = newLevel;
-
-    // Save updated data
-    localStorage.setItem('brightMindsSession', JSON.stringify(userData));
-
-    // Update UI
-    updateStats(userData);
-
-    // Show celebration animations
-    if (window.Celebrations) {
-        // Show confetti and success effects
-        Celebrations.showSuccess('Great Job!', xp, coins);
-
-        // Show level up modal if leveled up
-        if (leveledUp) {
-            setTimeout(() => {
-                Celebrations.showLevelUp(newLevel);
-            }, 1500);
+    try {
+        // Detect game ID from URL
+        let gameId = null;
+        const pathname = window.location.pathname;
+        const gameMatch = pathname.match(/game(\d+)\.html/i);
+        if (gameMatch) {
+            gameId = parseInt(gameMatch[1]);
         }
-    } else {
-        // Fallback to toast notifications
-        if (leveledUp) {
-            showToast(`🎉 Level Up! You're now Level ${newLevel}!`, 'success');
-            setTimeout(() => {
-                showToast(`+${xp} XP, +${coins} Coins earned!`, 'success');
-            }, 2000);
+
+        if (!gameId) {
+            console.error('Could not detect game ID from URL:', pathname);
+            showToast('Error: Could not save rewards. Please try again.', 'error');
+            return;
+        }
+
+        // Send rewards to backend API
+        const response = await fetch('api/games.php?action=award', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                gameId: gameId,
+                xpEarned: parseInt(xp) || 0,
+                coinsEarned: parseInt(coins) || 0,
+                score: 100,
+                completed: true
+            })
+        });
+
+        const data = await response.json();
+        console.log('Award API response:', data);
+
+        if (!data.success) {
+            console.error('Failed to award rewards:', data.message);
+            showToast('Failed to save rewards: ' + (data.message || 'Unknown error'), 'error');
+            return;
+        }
+
+        // Update localStorage with server response
+        if (data.stats) {
+            userData.xp = data.stats.total_xp;
+            userData.level = data.stats.current_level;
+            userData.coins = data.stats.coins;
+            userData.streak = data.stats.streak_days;
+            localStorage.setItem('brightMindsSession', JSON.stringify(userData));
         } else {
-            showToast(`+${xp} XP, +${coins} Coins earned!`, 'success');
+            // Fallback: update locally
+            userData.xp = (userData.xp || 0) + xp;
+            userData.coins = (userData.coins || 0) + coins;
+            const newLevel = Math.floor(userData.xp / 100) + 1;
+            userData.level = newLevel;
+            localStorage.setItem('brightMindsSession', JSON.stringify(userData));
         }
+
+        const newLevel = userData.level;
+        const leveledUp = newLevel > oldLevel;
+
+        // Update UI
+        if (typeof updateStats === 'function') {
+            updateStats(userData);
+        }
+
+        // Show celebration animations
+        if (window.Celebrations) {
+            // Show confetti and success effects
+            Celebrations.showSuccess('Great Job!', xp, coins);
+
+            // Show level up modal if leveled up
+            if (leveledUp) {
+                setTimeout(() => {
+                    Celebrations.showLevelUp(newLevel);
+                }, 1500);
+            }
+        } else {
+            // Fallback to toast notifications
+            if (leveledUp) {
+                showToast(`🎉 Level Up! You're now Level ${newLevel}!`, 'success');
+                setTimeout(() => {
+                    showToast(`+${xp} XP, +${coins} Coins earned!`, 'success');
+                }, 2000);
+            } else {
+                showToast(`+${xp} XP, +${coins} Coins earned!`, 'success');
+            }
+        }
+
+        // Refresh profile to show updated coins
+        setTimeout(() => {
+            if (typeof loadProfile === 'function') {
+                loadProfile();
+            }
+        }, 500);
+
+    } catch (error) {
+        console.error('Error awarding XP:', error);
+        showToast('Error saving rewards. Please check console for details.', 'error');
     }
 }
 
+
+/**
+ * Update stats display in UI
+ */
+function updateStats(userData) {
+    if (document.getElementById('xpValue')) {
+        document.getElementById('xpValue').textContent = userData.xp || 0;
+    }
+    if (document.getElementById('levelValue')) {
+        document.getElementById('levelValue').textContent = userData.level || 1;
+    }
+    if (document.getElementById('coinsValue')) {
+        document.getElementById('coinsValue').textContent = userData.coins || 0;
+    }
+    if (document.getElementById('streakValue')) {
+        document.getElementById('streakValue').textContent = userData.streak || 0;
+    }
+}
 
 /**
  * Update local storage stats

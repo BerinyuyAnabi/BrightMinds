@@ -25,6 +25,7 @@ switch ($action) {
         handleEnd();
         break;
     case 'award':
+        handleAward();
         break;
 
     default:
@@ -193,6 +194,69 @@ function handleEnd() {
     // Check for achievements
     checkAchievements($childId);
     
+    jsonResponse([
+        'success' => true,
+        'rewards' => [
+            'xp' => $xpEarned,
+            'coins' => $coinsEarned
+        ],
+        'stats' => $child
+    ]);
+}
+
+/**
+ * Award XP and coins for a game (simplified endpoint)
+ */
+function handleAward() {
+    global $db;
+
+    requireAuth();
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    $gameId = intval($input['gameId'] ?? 0);
+    $xpEarned = intval($input['xpEarned'] ?? 0);
+    $coinsEarned = intval($input['coinsEarned'] ?? 0);
+    $score = floatval($input['score'] ?? 100);
+    $completed = boolval($input['completed'] ?? true);
+    $childId = getCurrentChildId();
+
+    if (!$childId) {
+        jsonResponse(['success' => false, 'message' => 'Child ID required'], 400);
+    }
+
+    if (!$gameId) {
+        jsonResponse(['success' => false, 'message' => 'Game ID required'], 400);
+    }
+
+    // Verify game exists
+    $game = $db->selectOne("SELECT * FROM games WHERE gameID = ? AND is_active = 1", [$gameId]);
+    if (!$game) {
+        jsonResponse(['success' => false, 'message' => 'Invalid game ID'], 404);
+    }
+
+    // Get next sessionID
+    $maxSession = $db->selectOne("SELECT MAX(sessionID) as max_id FROM play_sessions");
+    $nextSessionId = ($maxSession['max_id'] ?? 0) + 1;
+
+    // Create play session record
+    $db->insert("
+        INSERT INTO play_sessions (sessionID, childID, activity_type, activity_id, start_time, end_time, score, xp_earned, coins_earned, completed)
+        VALUES (?, ?, 'game', ?, NOW(), NOW(), ?, ?, ?, ?)
+    ", [$nextSessionId, $childId, $gameId, $score, $xpEarned, $coinsEarned, $completed]);
+
+    // Award XP and coins
+    award_xp($childId, $xpEarned, $coinsEarned);
+
+    // Get updated child stats
+    $child = $db->selectOne("
+        SELECT total_xp, current_level, coins, streak_days
+        FROM children
+        WHERE childID = ?
+    ", [$childId]);
+
+    // Check for achievements
+    checkAchievements($childId);
+
     jsonResponse([
         'success' => true,
         'rewards' => [
