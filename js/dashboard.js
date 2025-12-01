@@ -655,11 +655,20 @@ async function awardXP(xp, coins = 0) {
     const sessionData = localStorage.getItem('brightMindsSession');
     if (!sessionData) {
         console.error('No session data found!');
+        showToast('Session expired. Please log in again.', 'error');
         return;
     }
 
-    const userData = JSON.parse(sessionData);
-    console.log('Current user data:', userData);
+    let userData;
+    try {
+        userData = JSON.parse(sessionData);
+        console.log('Current user data:', userData);
+    } catch (e) {
+        console.error('Failed to parse session data:', e);
+        showToast('Invalid session. Please log in again.', 'error');
+        return;
+    }
+
     const oldLevel = userData.level || 1;
 
     try {
