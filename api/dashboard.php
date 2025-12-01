@@ -15,6 +15,13 @@ switch ($action) {
     case 'get-profile':
         $childId = getCurrentChildId();
 
+        error_log("get-profile: childID from session = " . ($childId ?? 'NULL'));
+        error_log("get-profile: SESSION contents = " . print_r($_SESSION, true));
+
+        if (!$childId) {
+            jsonResponse(['success' => false, 'message' => 'Child ID not found in session'], 400);
+        }
+
         // Get child profile
         $profile = $db->selectOne("
             SELECT childID, display_name, avatar, total_xp, current_level, coins, streak_days
@@ -28,7 +35,7 @@ switch ($action) {
                 'profile' => $profile
             ]);
         } else {
-            jsonResponse(['success' => false, 'message' => 'Profile not found'], 404);
+            jsonResponse(['success' => false, 'message' => 'Profile not found in database'], 404);
         }
         break;
 
