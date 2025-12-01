@@ -8,8 +8,12 @@ let currentProfile = null;
 
 // Initialize on page load
 window.addEventListener('DOMContentLoaded', () => {
+    console.log('=== Dashboard.js loaded ===');
+
     // Skip dashboard initialization on quiz pages - they handle their own auth
     const currentPage = window.location.pathname.split('/').pop();
+    console.log('Current page:', currentPage);
+
     if (currentPage === 'quiz-take.html' || currentPage.includes('quiz-take')) {
         console.log('Skipping dashboard initialization on quiz page');
         return;
@@ -17,11 +21,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Check if we have a session before initializing
     const sessionData = localStorage.getItem('brightMindsSession');
+    console.log('Session data exists:', !!sessionData);
+
     if (!sessionData) {
         console.log('No session found, skipping dashboard initialization');
         return;
     }
 
+    console.log('Initializing dashboard...');
     checkAuth();
     loadProfile();
     loadParentInfo();
