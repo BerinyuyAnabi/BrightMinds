@@ -26,7 +26,7 @@ define('DB_NAME', 'webtech_2025A_logan_anabi');
 
 // define('DB_HOST', 'localhost');
 // define('DB_PORT', 8889);  
-// // define('DB_USER', 'localhost');
+// define('DB_USER', 'localhost');
 // define('DB_PASS', 'root');
 // define('DB_NAME', 'bright_minds_db');
 
@@ -258,7 +258,7 @@ function generateToken($length = 32) {
 
 /**
  * Award XP and coins to a child (replaces stored procedure)
- * This function updates the child's XP, coins, and level
+ * This function updates the child's XP, coins, level, and activity streak
  */
 function award_xp($childID, $xp_amount, $coin_amount) {
     $db = getDB();
@@ -283,11 +283,12 @@ function award_xp($childID, $xp_amount, $coin_amount) {
 
     error_log("award_xp: Current stats - XP: $current_xp, Level: $current_level, Coins: $current_coins");
 
-    // Update XP and coins
+    // Update XP, coins, and last activity date (for streak tracking)
     $result = $db->query("
         UPDATE children
         SET total_xp = total_xp + ?,
-            coins = coins + ?
+            coins = coins + ?,
+            last_activity_date = CURDATE()
         WHERE childID = ?
     ", [$xp_amount, $coin_amount, $childID]);
 
@@ -316,6 +317,9 @@ function award_xp($childID, $xp_amount, $coin_amount) {
             error_log("award_xp: Level updated to $new_level");
         }
     }
+
+    // Update streak when awarding XP (activity indicates daily engagement)
+    update_streak($childID);
 
     error_log("award_xp: Update completed successfully");
     return true;

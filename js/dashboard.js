@@ -291,11 +291,11 @@ async function linkToParent() {
         if (linkData.success) {
             showToast('Successfully linked to parent account! 🎉', 'success');
             inviteCodeInput.value = '';
-            
-            // Reload parent info
-            // setTimeout(() => {
-            //     loadParentInfo();
-            // }, 1500);
+
+            // Reload the page to show updated parent link status
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
         } else {
             showToast(linkData.message || 'Failed to link account', 'error');
         }
@@ -335,11 +335,11 @@ async function unlinkFromParent() {
         
         if (data.success) {
             showToast('Successfully unlinked from parent account', 'success');
-            
-            // Show not linked view
+
+            // Reload the page to show updated parent link status
             setTimeout(() => {
-                loadParentInfo();
-            }, 1000);
+                window.location.reload();
+            }, 1500);
         } else {
             showToast(data.message || 'Failed to unlink account', 'error');
         }

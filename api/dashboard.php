@@ -210,9 +210,14 @@ switch ($action) {
     case 'link-to-parent':
         $childId = getCurrentChildId();
         $inviteCode = $_GET['code'] ?? '';
+
+        if (!$childId) {
+            jsonResponse(['success' => false, 'message' => 'Child ID not found'], 400);
+        }
+
         // Check if invite code exists
         $parent = $db->selectOne("
-            SELECT userID FROM users 
+            SELECT userID FROM users
             WHERE parent_code = ?
         ", [$inviteCode]);
 
@@ -221,13 +226,13 @@ switch ($action) {
         }
 
         // Link child to parent
-        $update = $db->execute("
-        UPDATE children 
-        SET parentID = ? 
-        WHERE childID = ?
+        $update = $db->update("
+            UPDATE children
+            SET parentID = ?
+            WHERE childID = ?
         ", [$parent['userID'], $childId]);
 
-        if ($update) {
+        if ($update !== false) {
             jsonResponse([
                 'success' => true,
                 'message' => 'Child linked to parent successfully'
