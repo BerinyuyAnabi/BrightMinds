@@ -189,6 +189,7 @@
         let lives = 3;
         let timeLeft = 60;
         let gameActive = false;
+        let rewardsAwarded = false;
 
         // Initialize music
         window.addEventListener('DOMContentLoaded', () => {
@@ -235,6 +236,7 @@
             lives = 3;
             timeLeft = 60;
             gameActive = true;
+            rewardsAwarded = false;
 
             document.getElementById('score').textContent = '0';
             document.getElementById('timer').textContent = '60';
@@ -314,16 +316,16 @@
                         document.getElementById('score').textContent = score;
                         item.textContent = '✨';
                         if (typeof showToast === 'function') {
-                            showToast('+10 points! ⭐', 'success');
+                            showToast('+10 points!', 'success');
                         }
                     } else {
                         // Hit a cloud!
                         lives--;
-                        const heartsDisplay = '❤️'.repeat(lives) + '🖤'.repeat(3 - lives);
+                        const heartsDisplay = '❤'.repeat(lives) + '🖤'.repeat(3 - lives);
                         document.getElementById('lives').textContent = heartsDisplay;
                         item.textContent = '💨';
                         if (typeof showToast === 'function') {
-                            showToast('Oops! Lost a life! ☁️', 'error');
+                            showToast('Oops! Lost a life!', 'error');
                         }
                         if (lives <= 0) {
                             endGame();
@@ -343,6 +345,8 @@
         }
 
         function endGame() {
+            if (!gameActive) return; // Prevent multiple calls
+
             gameActive = false;
             clearInterval(spawnInterval);
             clearInterval(timerInterval);
@@ -350,8 +354,15 @@
             // Remove remaining items
             document.querySelectorAll('.star').forEach(s => s.remove());
 
+            // Prevent duplicate reward awards
+            if (rewardsAwarded) {
+                console.log('Rewards already awarded for this game session');
+                return;
+            }
+            rewardsAwarded = true;
+
             // Calculate rewards
-            let xpReward = score * 1.5;
+            let xpReward = Math.floor(score * 1.5);
             let coinReward = Math.floor(score / 4);
 
             // Bonus for high score
@@ -367,15 +378,17 @@
             xpReward += lives * 15;
             coinReward += lives * 5;
 
+            console.log('Awarding rewards:', xpReward, 'XP and', coinReward, 'coins');
+
             // Show celebration animations first
             if (window.Celebrations) {
                 Celebrations.showTrophy('⭐', 'Star Catcher!',
                     `Final Score: ${score} points | Lives: ${lives}`,
-                    `+${Math.floor(xpReward)} XP, +${coinReward} Coins`,
+                    `+${xpReward} XP, +${coinReward} Coins`,
                     () => {
                         // Award XP and coins after trophy modal closes
                         if (typeof awardXP === 'function') {
-                            awardXP(Math.floor(xpReward), coinReward);
+                            awardXP(xpReward, coinReward);
                         }
                     }
                 );
@@ -383,13 +396,13 @@
                 document.getElementById('finalScore').textContent =
                     `Final Score: ${score} points | Lives remaining: ${lives}`;
                 document.getElementById('rewardInfo').textContent =
-                    `Earned: ${Math.floor(xpReward)} XP and ${coinReward} Coins!`;
+                    `Earned: ${xpReward} XP and ${coinReward} Coins!`;
                 document.getElementById('gameComplete').classList.add('show');
 
                 // Award rewards
                 if (typeof awardXP === 'function') {
                     setTimeout(() => {
-                        awardXP(Math.floor(xpReward), coinReward);
+                        awardXP(xpReward, coinReward);
                     }, 1000);
                 }
             }
