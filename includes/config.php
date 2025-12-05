@@ -18,11 +18,25 @@ ini_set('display_errors', 1);
 // ========================================
 // DATABASE CONFIGURATION
 // ========================================
+
 define('DB_HOST', 'localhost');
-define('DB_PORT', 3306);  // XAMPP default port
-define('DB_USER', 'root');  // XAMPP default user
-define('DB_PASS', '');  // XAMPP default password is EMPTY
-define('DB_NAME', 'bright_minds_db');
+define('DB_PORT', 322);  // school server  port
+define('DB_USER', 'logan.anabi');  // school  user
+define('DB_PASS', 'Minushbest#0');  // password 
+define('DB_NAME', 'webtech_2025A_logan_anabi'); 
+
+
+// define('DB_HOST', 'localhost');
+// define('DB_PORT', 3306);  // XAMPP default port
+// define('DB_USER', 'root');  // XAMPP default user
+// define('DB_PASS', '');  // XAMPP default password is EMPTY
+// define('DB_NAME', 'bright_minds_db');
+
+
+// host = localhost;
+// user = logan.anabi;
+// password = Minushbest#0;
+// database = webtech_2025A_logan_anabi;
 
 // ========================================
 // APPLICATION SETTINGS
