@@ -20,7 +20,7 @@ ini_set('display_errors', 1);
 // ========================================
 
 define('DB_HOST', 'localhost');
-define('DB_PORT', 322);  // school server  port
+// define('DB_PORT', );  // school server  port
 define('DB_USER', 'logan.anabi');  // school  user
 define('DB_PASS', 'Minushbest#0');  // password 
 define('DB_NAME', 'webtech_2025A_logan_anabi'); 
@@ -90,7 +90,7 @@ class Database {
                 DB_USER, 
                 DB_PASS, 
                 DB_NAME, 
-                DB_PORT
+                // DB_PORT
             );
             
             if ($this->connection->connect_error) {
