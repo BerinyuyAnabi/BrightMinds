@@ -19,31 +19,26 @@ ini_set('display_errors', 1);
 // DATABASE CONFIGURATION
 // ========================================
 
+// Server Configuration (Active)
 define('DB_HOST', 'localhost');
-// define('DB_PORT', );  // school server  port
-define('DB_USER', 'logan.anabi');  // school  user
-define('DB_PASS', 'Minushbest#0');  // password 
-define('DB_NAME', 'webtech_2025A_logan_anabi'); 
+define('DB_USER', 'logan.anabi');  // school server user
+define('DB_PASS', 'Minushbest#0');  // school server password
+define('DB_NAME', 'webtech_2025A_logan_anabi');  // school server database
 
-
+// Local MAMP Configuration (Commented out)
 // define('DB_HOST', 'localhost');
-// define('DB_PORT', 3306);  // XAMPP default port
-// define('DB_USER', 'root');  // XAMPP default user
-// define('DB_PASS', '');  // XAMPP default password is EMPTY
+// define('DB_PORT', 8889);  // MAMP default port
+// define('DB_USER', 'root');  // MAMP default user
+// define('DB_PASS', 'root');  // MAMP default password is 'root'
 // define('DB_NAME', 'bright_minds_db');
-
-
-// host = localhost;
-// user = logan.anabi;
-// password = Minushbest#0;
-// database = webtech_2025A_logan_anabi;
 
 // ========================================
 // APPLICATION SETTINGS
 // ========================================
 define('APP_NAME', 'Bright Minds');
 define('APP_VERSION', '2.0');
-define('BASE_URL', 'http://localhost/BrightMinds/BrightMinds/'); 
+// define('BASE_URL', 'http://localhost/BrightMinds/BrightMinds/');  // Local
+define('BASE_URL', 'http://169.239.251.102:3411/~logan.anabi/BrightMinds/BrightMinds/');  // Server
 define('TIMEZONE', 'UTC');
 
 // Set timezone
@@ -86,11 +81,11 @@ class Database {
     private function __construct() {
         try {
             $this->connection = new mysqli(
-                DB_HOST, 
-                DB_USER, 
-                DB_PASS, 
-                DB_NAME, 
-                // DB_PORT
+                DB_HOST,
+                DB_USER,
+                DB_PASS,
+                DB_NAME
+                // DB_PORT  // needed for local MAMP
             );
             
             if ($this->connection->connect_error) {

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Reward API</title>
+</head>
+<body>
+    <h1>Reward API Test</h1>
+    <button id="testBtn">Test Reward Upload</button>
+    <pre id="output"></pre>
+
+    <script>
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            const output = document.getElementById('output');
+            output.textContent = 'Testing...\n\n';
+
+            // Check session
+            const session = localStorage.getItem('brightMindsSession');
+            output.textContent += '1. Session Check:\n';
+            if (!session) {
+                output.textContent += 'ERROR: No session found in localStorage\n';
+                output.textContent += 'Please log in first!\n';
+                return;
+            }
+            output.textContent += 'Session found: ' + session + '\n\n';
+
+            // Test award endpoint
+            output.textContent += '2. Testing Award Endpoint:\n';
+            try {
+                const response = await fetch('api/games.php?action=award', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        gameId: 1,
+                        xpEarned: 10,
+                        coinsEarned: 5,
+                        score: 100,
+                        completed: true
+                    })
+                });
+
+                output.textContent += 'Response Status: ' + response.status + '\n';
+                output.textContent += 'Response OK: ' + response.ok + '\n\n';
+
+                const text = await response.text();
+                output.textContent += '3. Response Body:\n';
+                output.textContent += text + '\n\n';
+
+                try {
+                    const data = JSON.parse(text);
+                    output.textContent += '4. Parsed Response:\n';
+                    output.textContent += JSON.stringify(data, null, 2);
+                } catch (e) {
+                    output.textContent += 'ERROR: Could not parse JSON response\n';
+                    output.textContent += 'Parse error: ' + e.message;
+                }
+            } catch (error) {
+                output.textContent += 'ERROR: ' + error.message + '\n';
+                output.textContent += error.stack;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -122,7 +122,6 @@ function handleStart() {
     ]);
 }
 
-/
 //End a game session and award rewards
 
 function handleEnd() {
