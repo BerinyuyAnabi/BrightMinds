@@ -766,10 +766,59 @@ async function generateInviteCode() {
 
 // Copy invite code
 function copyInviteCode() {
-    const code = document.getElementById('inviteCodeText').textContent;
-    navigator.clipboard.writeText(code).then(() => {
-        showToast('Code copied to clipboard!', 'success');
-    });
+    const codeElement = document.getElementById('inviteCodeText');
+    if (!codeElement) {
+        showToast('Invite code not found', 'error');
+        return;
+    }
+
+    const code = codeElement.textContent.trim();
+
+    // Try modern clipboard API first
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(code)
+            .then(() => {
+                showToast('Code copied to clipboard!', 'success');
+            })
+            .catch(err => {
+                console.error('Clipboard API failed:', err);
+                fallbackCopy(code);
+            });
+    } else {
+        // Fallback for older browsers or non-HTTPS
+        fallbackCopy(code);
+    }
+}
+
+// Fallback copy method for browsers without clipboard API or non-HTTPS
+function fallbackCopy(text) {
+    // Create a temporary textarea element
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.top = '-9999px';
+    textarea.style.left = '-9999px';
+    textarea.setAttribute('readonly', '');
+
+    document.body.appendChild(textarea);
+
+    // Select and copy the text
+    textarea.select();
+    textarea.setSelectionRange(0, 99999); // For mobile devices
+
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showToast('Code copied to clipboard!', 'success');
+        } else {
+            showToast('Failed to copy code. Please copy manually.', 'error');
+        }
+    } catch (err) {
+        console.error('Fallback copy failed:', err);
+        showToast('Failed to copy. Please copy manually: ' + text, 'error');
+    } finally {
+        document.body.removeChild(textarea);
+    }
 }
 
 // Show goal modal

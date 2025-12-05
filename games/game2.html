@@ -206,10 +206,12 @@
         let timeLeft = 60;
         let gameActive = false;
         let currentAnswer = 0;
+        let rewardsAwarded = false;
 
         // Start game function
         function startGame() {
             score = 0;
+            rewardsAwarded = false;
             streak = 0;
             timeLeft = 60;
             gameActive = true;
@@ -331,9 +333,18 @@
 
         // End game function
         function endGame() {
+            if (!gameActive) return; // Prevent multiple calls
+
             gameActive = false;
             clearInterval(timerInterval);
             answerInput.disabled = true;
+
+            // Prevent duplicate reward awards
+            if (rewardsAwarded) {
+                console.log('Rewards already awarded for this game session');
+                return;
+            }
+            rewardsAwarded = true;
 
             // Calculate rewards
             let xpReward = Math.floor(score * 1.5);

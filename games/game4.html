@@ -310,6 +310,7 @@
         let correctAnswers = 0;
         let gameActive = false;
         let usedQuestions = [];
+        let rewardsAwarded = false;
 
         // Initialize music
         window.addEventListener('DOMContentLoaded', () => {
@@ -340,6 +341,7 @@
             correctAnswers = 0;
             usedQuestions = [];
             gameActive = true;
+            rewardsAwarded = false;
             document.getElementById('score').textContent = '0';
             document.getElementById('questionNum').textContent = '1/10';
             document.getElementById('correct').textContent = '0';
@@ -427,8 +429,17 @@
         }
 
         function endGame() {
+            if (!gameActive) return; // Prevent multiple calls
+
             gameActive = false;
             document.getElementById('nextBtn').style.display = 'none';
+
+            // Prevent duplicate reward awards
+            if (rewardsAwarded) {
+                console.log('Rewards already awarded for this game session');
+                return;
+            }
+            rewardsAwarded = true;
 
             // Calculate rewards
             let xpReward = score * 2;
@@ -442,6 +453,8 @@
                 xpReward += 25;
                 coinReward += 10;
             }
+
+            console.log('Awarding rewards:', xpReward, 'XP and', coinReward, 'coins');
 
             // Show celebration animations first
             if (window.Celebrations) {

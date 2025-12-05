@@ -257,6 +257,7 @@
         let matchedPairs = 0;
         let flippedCards = [];
         let cards = [];
+        let rewardsAwarded = false;
 
         // Card emojis
         const cardEmojis = ['🎨', '🎭', '🎪', '🎯', '🎲', '🎸', '🎹', '🎺'];
@@ -293,6 +294,7 @@
             moves = 0;
             flippedCards = [];
             gameActive = true;
+            rewardsAwarded = false;
 
             // Reset UI
             document.getElementById('moves').textContent = '0';
@@ -394,8 +396,17 @@
 
         // End game
         function endGame() {
+            if (!gameActive) return; // Prevent multiple calls
+
             gameActive = false;
             clearInterval(timerInterval);
+
+            // Prevent duplicate reward awards
+            if (rewardsAwarded) {
+                console.log('Rewards already awarded for this game session');
+                return;
+            }
+            rewardsAwarded = true;
 
             const totalTime = Math.floor((Date.now() - startTime) / 1000);
             const minutes = Math.floor(totalTime / 60);

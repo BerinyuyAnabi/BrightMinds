@@ -214,11 +214,13 @@
 
         let currentWord = null;
         let currentAnswer = [];
+        let letterButtons = {}; // Track which button was used for each position
         let score = 0;
         let wordsCompleted = 0;
         let streak = 0;
         let usedWords = [];
         let gameActive = false;
+        let rewardsAwarded = false;
 
         // Initialize music
         window.addEventListener('DOMContentLoaded', () => {
@@ -249,6 +251,7 @@
             streak = 0;
             usedWords = [];
             gameActive = true;
+            rewardsAwarded = false;
             document.getElementById('score').textContent = '0';
             document.getElementById('wordCount').textContent = '0/10';
             document.getElementById('streak').textContent = '0';
@@ -270,6 +273,7 @@
             currentWord = availableWords[Math.floor(Math.random() * availableWords.length)];
             usedWords.push(currentWord.word);
             currentAnswer = [];
+            letterButtons = {};
 
             // Show hint
             document.getElementById('hintBox').textContent = '💡 Hint: ' + currentWord.hint;
@@ -283,16 +287,42 @@
 
         function updateWordDisplay() {
             const display = document.getElementById('wordDisplay');
-            let displayText = '';
+            display.innerHTML = ''; // Clear existing display
 
             for (let i = 0; i < currentWord.word.length; i++) {
+                const letterSpan = document.createElement('span');
+                letterSpan.style.display = 'inline-block';
+                letterSpan.style.margin = '0 5px';
+                letterSpan.style.minWidth = '40px';
+                letterSpan.style.textAlign = 'center';
+                letterSpan.style.fontSize = '3rem';
+                letterSpan.style.fontWeight = 'bold';
+
                 if (currentAnswer[i]) {
-                    displayText += currentAnswer[i] + ' ';
+                    letterSpan.textContent = currentAnswer[i];
+                    letterSpan.style.color = 'var(--primary-blue)';
+                    letterSpan.style.cursor = 'pointer';
+                    letterSpan.style.textDecoration = 'underline';
+                    letterSpan.style.transition = 'all 0.2s ease';
+                    letterSpan.title = 'Click to remove';
+                    letterSpan.onclick = () => removeLetter(i);
+
+                    // Add hover effect
+                    letterSpan.onmouseenter = (e) => {
+                        e.target.style.color = 'var(--coral)';
+                        e.target.style.transform = 'scale(1.2)';
+                    };
+                    letterSpan.onmouseleave = (e) => {
+                        e.target.style.color = 'var(--primary-blue)';
+                        e.target.style.transform = 'scale(1)';
+                    };
                 } else {
-                    displayText += '_ ';
+                    letterSpan.textContent = '_';
+                    letterSpan.style.color = 'var(--gray)';
                 }
+
+                display.appendChild(letterSpan);
             }
-            display.textContent = displayText.trim();
         }
 
         function createLetterButtons() {
@@ -321,21 +351,48 @@
             if (!gameActive) return;
 
             // Find next empty position
-            const nextPos = currentAnswer.length;
+            const nextPos = currentAnswer.findIndex(l => l === undefined || l === null);
+            const actualPos = nextPos === -1 ? currentAnswer.length : nextPos;
 
-            if (nextPos < currentWord.word.length) {
-                currentAnswer.push(letter);
+            if (actualPos < currentWord.word.length) {
+                currentAnswer[actualPos] = letter;
+                letterButtons[actualPos] = btn; // Track which button was used
                 btn.disabled = true;
+                btn.style.opacity = '0.5';
                 updateWordDisplay();
-                // Check if word is complete
-                if (currentAnswer.length === currentWord.word.length) {
+
+                // Check if word is complete (all positions filled)
+                if (currentAnswer.filter(l => l).length === currentWord.word.length) {
                     checkWord();
                 }
             }
         }
 
+        function removeLetter(position) {
+            if (!gameActive) return;
+
+            const letter = currentAnswer[position];
+            if (!letter) return;
+
+            // Re-enable the button that was used for this position
+            const btn = letterButtons[position];
+            if (btn) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+
+            // Remove the letter from this position
+            currentAnswer[position] = null;
+            delete letterButtons[position];
+
+            // Clear feedback
+            document.getElementById('feedback').textContent = '';
+
+            updateWordDisplay();
+        }
+
         function checkWord() {
-            const userWord = currentAnswer.join('');
+            const userWord = currentAnswer.filter(l => l).join('');
             const feedback = document.getElementById('feedback');
             if (userWord === currentWord.word) {
                 // Correct!
@@ -359,6 +416,7 @@
 
                 setTimeout(() => {
                     currentAnswer = [];
+                    letterButtons = {};
                     updateWordDisplay();
                     createLetterButtons();
                     feedback.textContent = '';
@@ -380,8 +438,17 @@
         }
 
         function endGame() {
+            if (!gameActive) return; // Prevent multiple calls
+
             gameActive = false;
             document.getElementById('skipBtn').style.display = 'none';
+
+            // Prevent duplicate reward awards
+            if (rewardsAwarded) {
+                console.log('Rewards already awarded for this game session');
+                return;
+            }
+            rewardsAwarded = true;
 
             // Calculate rewards
             let xpReward = score * 2;
