@@ -280,7 +280,10 @@ async function loadProfile() {
         const sessionData = localStorage.getItem('brightMindsSession');
         if (sessionData) {
             const userData = JSON.parse(sessionData);
-            document.getElementById('userName').textContent = userData.displayName || 'Explorer';
+            const userNameEl = document.getElementById('userName');
+            if (userNameEl) {
+                userNameEl.textContent = userData.displayName || 'Explorer';
+            }
         }
     }
 }
@@ -846,10 +849,12 @@ async function awardXP(xp, coins = 0) {
             detail: { stats: data.stats }
         }));
 
-        // Refresh profile to show updated stats
+        // Refresh profile to show updated stats (only if on dashboard page)
         setTimeout(() => {
-            if (typeof loadProfile === 'function') {
-                loadProfile();
+            if (typeof loadProfile === 'function' && document.getElementById('userName')) {
+                loadProfile().catch(err => {
+                    console.log('Profile refresh skipped (not on dashboard):', err);
+                });
             }
         }, 500);
 
@@ -857,7 +862,13 @@ async function awardXP(xp, coins = 0) {
 
     } catch (error) {
         console.error('Error awarding XP:', error);
-        showToast('Error saving rewards. Please check console for details.', 'error');
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            xp: xp,
+            coins: coins
+        });
+        showToast('Error saving rewards: ' + error.message, 'error');
     }
 }
 
