@@ -868,7 +868,7 @@ async function awardXP(xp, coins = 0) {
             xp: xp,
             coins: coins
         });
-        showToast('Error saving rewards: ' + error.message, 'error');
+        // showToast('Error saving rewards: ' + error.message, 'error');
     }
 }
 
