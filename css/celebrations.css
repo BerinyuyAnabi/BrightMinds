@@ -1,0 +1,535 @@
+ /* CONFETTI ANIMATION */
+
+.confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #f0f;
+    top: -10px;
+    opacity: 0;
+    animation: confetti-fall 3s ease-in-out forwards;
+}
+
+@keyframes confetti-fall {
+    0% {
+        opacity: 1;
+        transform: translateY(0) rotate(0deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(100vh) rotate(720deg);
+    }
+}
+
+
+/* TROPHY PRESENTATION */
+
+
+.trophy-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+.trophy-content {
+    background: white;
+    border-radius: 30px;
+    padding: 50px;
+    text-align: center;
+    max-width: 500px;
+    position: relative;
+    animation: trophyBounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.trophy-icon {
+    font-size: 8rem;
+    margin-bottom: 20px;
+    animation: trophySpin 1s ease-in-out;
+    display: inline-block;
+}
+
+.trophy-title {
+    font-size: 2.5rem;
+    color: #4A90E2;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.trophy-message {
+    font-size: 1.3rem;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.trophy-reward {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 20px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 20px;
+    animation: pulse 1.5s infinite;
+}
+
+.trophy-close {
+    background: #4A90E2;
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 25px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.trophy-close:hover {
+    background: #357ABD;
+    transform: scale(1.05);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes trophyBounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) translateY(-100px);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.95);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes trophySpin {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+    25% {
+        transform: rotate(10deg) scale(1.1);
+    }
+    50% {
+        transform: rotate(-10deg) scale(1.2);
+    }
+    75% {
+        transform: rotate(5deg) scale(1.1);
+    }
+    100% {
+        transform: rotate(0deg) scale(1);
+    }
+}
+
+/* LEVEL UP ANIMATION */
+
+.levelup-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+.levelup-content {
+    text-align: center;
+    color: white;
+    animation: levelupBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.levelup-icon {
+    font-size: 10rem;
+    margin-bottom: 20px;
+    animation: levelupStar 1s ease-in-out infinite;
+    display: inline-block;
+}
+
+.levelup-text {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.levelup-number {
+    font-size: 8rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    animation: levelupPulse 1.5s ease-in-out infinite;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.levelup-message {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+@keyframes levelupBounce {
+    0% {
+        opacity: 0;
+        transform: scale(0.5) translateY(100px);
+    }
+    60% {
+        opacity: 1;
+        transform: scale(1.1) translateY(-10px);
+    }
+    100% {
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes levelupStar {
+    0%, 100% {
+        transform: rotate(0deg) scale(1);
+    }
+    50% {
+        transform: rotate(180deg) scale(1.2);
+    }
+}
+
+@keyframes levelupPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+}
+
+   /* XP GAIN POPUP */
+
+.xp-popup {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 40px;
+    border-radius: 50px;
+    font-size: 2rem;
+    font-weight: bold;
+    z-index: 9998;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: xpPopupAnimation 2s ease-in-out forwards;
+    pointer-events: none;
+}
+
+.xp-popup-icon {
+    display: inline-block;
+    margin-right: 10px;
+    animation: xpIconSpin 0.6s ease-in-out;
+}
+
+@keyframes xpPopupAnimation {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5) translateY(50px);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1) translateY(0);
+    }
+    80% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8) translateY(-50px);
+    }
+}
+
+@keyframes xpIconSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+   /* ACHIEVEMENT UNLOCK ANIMATION */
+
+.achievement-unlock-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    animation: fadeIn 0.4s ease-in-out forwards;
+}
+
+.achievement-unlock-content {
+    background: white;
+    border-radius: 30px;
+    padding: 50px;
+    text-align: center;
+    max-width: 500px;
+    position: relative;
+    animation: achievementSlideUp 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.achievement-unlock-header {
+    font-size: 1.8rem;
+    color: #FFD700;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.achievement-unlock-badge {
+    font-size: 8rem;
+    margin: 20px 0;
+    animation: achievementBadgePop 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    display: inline-block;
+    position: relative;
+}
+
+.achievement-unlock-badge::before {
+    content: '(';
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    font-size: 3rem;
+    animation: sparkle 1.5s ease-in-out infinite;
+}
+
+.achievement-unlock-badge::after {
+    content: '(';
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    font-size: 3rem;
+    animation: sparkle 1.5s ease-in-out infinite 0.5s;
+}
+
+.achievement-unlock-title {
+    font-size: 2.5rem;
+    color: #4A90E2;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.achievement-unlock-description {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.achievement-unlock-reward {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 20px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+}
+
+@keyframes achievementSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(100px) scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes achievementBadgePop {
+    0% {
+        transform: scale(0) rotate(0deg);
+    }
+    50% {
+        transform: scale(1.2) rotate(180deg);
+    }
+    100% {
+        transform: scale(1) rotate(360deg);
+    }
+}
+
+@keyframes sparkle {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+
+   /* COIN RAIN ANIMATION */
+   
+
+.coin-rain-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.coin {
+    position: absolute;
+    font-size: 2rem;
+    top: -50px;
+    animation: coinFall 2s ease-in forwards;
+}
+
+@keyframes coinFall {
+    0% {
+        opacity: 1;
+        transform: translateY(0) rotate(0deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(100vh) rotate(360deg);
+    }
+}
+
+   /* STREAK FIRE ANIMATION */
+   
+
+.streak-celebration {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10rem;
+    z-index: 9999;
+    animation: streakBurst 1.5s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes streakBurst {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.5);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2);
+    }
+}
+   /* UTILITY ANIMATIONS */
+  
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.shake {
+    animation: shake 0.5s;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+.bounce {
+    animation: bounce 0.6s;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-20px);
+    }
+    60% {
+        transform: translateY(-10px);
+    }
+}
+
+   /* STAR BURST EFFECT */
+  
+.star-burst {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 200px;
+    height: 200px;
+    transform: translate(-50%, -50%);
+    z-index: 9998;
+    pointer-events: none;
+}
+
+.star-particle {
+    position: absolute;
+    font-size: 2rem;
+    animation: starParticle 1s ease-out forwards;
+}
+
+@keyframes starParticle {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--tx), var(--ty)) scale(0);
+    }
+}

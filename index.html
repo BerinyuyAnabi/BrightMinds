@@ -1,0 +1,345 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bright Minds - Learn, Play, Grow! 🌟</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <style>
+        /* Parent Access Link Styles */
+        .parent-access-link {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .btn-parent-access {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-parent-access:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-parent-access .icon {
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .parent-access-link {
+                top: 10px;
+                right: 10px;
+            }
+
+            .btn-parent-access {
+                padding: 10px 18px;
+                font-size: 0.9rem;
+            }
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: var(--gray);
+        }
+
+        .auth-footer a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .auth-footer a:hover {
+            color: var(--secondary-purple);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="cloud cloud-3"></div>
+        <div class="star star-1">⭐</div>
+        <div class="star star-2">✨</div>
+        <div class="star star-3">🌟</div>
+        <div class="float-icon icon-1">📚</div>
+        <div class="float-icon icon-2">🎮</div>
+        <div class="float-icon icon-3">🎨</div>
+        <div class="float-icon icon-4">🚀</div>
+    </div>
+
+    <!-- Parent Access Button (Top Right) -->
+    <div class="parent-access-link">
+        <button class="btn-parent-access" onclick="location.href='parent-auth.html'">
+            <span class="icon">👤</span>
+            <span>Parent Access</span>
+        </button>
+    </div>
+
+    <div class="container">
+        <!-- Welcome Screen -->
+        <section class="welcome-screen" id="welcomeScreen">
+            <div class="logo">
+                <div class="logo-icon">🧠</div>
+                <h1 class="logo-text">Bright Minds</h1>
+            </div>
+
+            <h2 class="tagline">Where Learning is an Adventure!</h2>
+
+            <div class="mascot-container">
+                <div class="mascot owl">🦉</div>
+                <div class="mascot fox">🦊</div>
+                <div class="mascot rabbit">🐰</div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary pulse" id="btnSignup">
+                    <span class="btn-icon">🎉</span>
+                    Join the Adventure!
+                </button>
+                <button class="btn btn-secondary" id="btnLogin">
+                    <span class="btn-icon">👋</span>
+                    Welcome Back!
+                </button>
+            </div>
+
+            <div class="features-preview">
+                <div class="feature">
+                    <span class="feature-icon">🎮</span>
+                    <span>Fun Games</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">📝</span>
+                    <span>Cool Quizzes</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">📖</span>
+                    <span>Amazing Stories</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">🏆</span>
+                    <span>Earn Rewards</span>
+                </div>
+            </div>
+
+            <!-- Parent Access Footer Link -->
+            <div class="auth-footer">
+                <p>Are you a parent? <a href="parent-auth.html">Access Parent Dashboard →</a></p>
+            </div>
+        </section>
+
+        <!-- Signup Form -->
+        <section class="auth-form hidden" id="signupForm">
+            <button class="btn-back" id="signupBack">
+                <span>←</span> Back
+            </button>
+
+            <div class="form-header">
+                <h2>🎒 Join the Adventure!</h2>
+                <p>Create your learning account</p>
+            </div>
+
+            <form id="formSignup" autocomplete="off">
+                <div class="form-field">
+                    <label for="signupUsername">
+                        <span class="label-icon">✏️</span>
+                        Choose Your Explorer Name
+                    </label>
+                    <input type="text" id="signupUsername" name="username" required placeholder="e.g., SuperSam123"
+                        autocomplete="off">
+                    <span class="field-icon success">✓</span>
+                    <div class="error-message" id="usernameError"></div>
+                </div>
+
+                <div class="form-field">
+                    <label for="signupEmail">
+                        <span class="label-icon">📧</span>
+                        Your Email Address
+                    </label>
+                    <input type="email" id="signupEmail" name="email" required placeholder="your.email@example.com"
+                        autocomplete="off">
+                    <span class="field-icon success">✓</span>
+                    <div class="error-message" id="emailError"></div>
+                </div>
+
+                <div class="form-field">
+                    <label for="signupPassword">
+                        <span class="label-icon">🔒</span>
+                        Create a Secret Password
+                    </label>
+                    <input type="password" id="signupPassword" name="password" required placeholder="Make it strong!"
+                        autocomplete="new-password">
+                    <span class="field-icon success">✓</span>
+                    <div class="password-strength">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strengthFill"></div>
+                        </div>
+                        <div class="strength-text" id="strengthText"></div>
+                    </div>
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+
+                <div class="form-field">
+                    <label for="signupConfirmPassword">
+                        <span class="label-icon">🔒</span>
+                        Confirm Your Password
+                    </label>
+                    <input type="password" id="signupConfirmPassword" name="confirmPassword" required
+                        placeholder="Re-enter your password" autocomplete="new-password">
+                    <span class="field-icon success">✓</span>
+                    <div class="error-message" id="confirmPasswordError"></div>
+                </div>
+
+                <div class="form-field">
+                    <label for="displayName">
+                        <span class="label-icon">🌟</span>
+                        What Should We Call You?
+                    </label>
+                    <input type="text" id="displayName" name="displayName" required placeholder="Your display name">
+                    <span class="field-icon success">✓</span>
+                </div>
+
+
+                <div class="form-field">
+                    <label>
+                        <span class="label-icon">🎭</span>
+                        Choose Your Avatar
+                    </label>
+                    <div class="avatar-selector">
+                        <div class="avatar-option selected" data-avatar="owl">
+                            <div class="avatar-circle">🦉</div>
+                            <p>Wise Owl</p>
+                        </div>
+                        <div class="avatar-option" data-avatar="fox">
+                            <div class="avatar-circle">🦊</div>
+                            <p>Smart Fox</p>
+                        </div>
+                        <div class="avatar-option" data-avatar="rabbit">
+                            <div class="avatar-circle">🐰</div>
+                            <p>Quick Rabbit</p>
+                        </div>
+                        <div class="avatar-option" data-avatar="bear">
+                            <div class="avatar-circle">🐻</div>
+                            <p>Strong Bear</p>
+                        </div>
+                        <div class="avatar-option" data-avatar="cat">
+                            <div class="avatar-circle">🐱</div>
+                            <p>Curious Cat</p>
+                        </div>
+                        <div class="avatar-option" data-avatar="dog">
+                            <div class="avatar-circle">🐕</div>
+                            <p>Loyal Dog</p>
+                        </div>
+                    </div>
+                    <input type="hidden" id="selectedAvatar" name="avatar" value="owl">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-large" id="btnSubmitSignup">
+                        <span class="btn-icon">🚀</span>
+                        Start Learning!
+                    </button>
+                </div>
+            </form>
+
+            <div class="loading-overlay hidden" id="loadingSignup">
+                <div class="loading-spinner"></div>
+                <p>Creating your account...</p>
+            </div>
+
+            <!-- Parent Access Link in Form -->
+            <div class="auth-footer">
+                <p>Are you a parent? <a href="parent-auth.html">Access Parent Dashboard →</a></p>
+            </div>
+        </section>
+
+        <!-- Login Form -->
+        <section class="auth-form hidden" id="loginForm">
+            <button class="btn-back" id="loginBack">
+                <span>←</span> Back
+            </button>
+
+            <div class="form-header">
+                <h2>👋 Welcome Back!</h2>
+                <p>Continue your learning journey</p>
+            </div>
+
+            <form id="formLogin" autocomplete="off">
+                <div class="form-field">
+                    <label for="loginUsername">
+                        <span class="label-icon">👤</span>
+                        Your Username or Email
+                    </label>
+                    <input type="text" id="loginUsername" name="username" required
+                        placeholder="Enter your username or email" autocomplete="username">
+                    <div class="error-message" id="loginUsernameError"></div>
+                </div>
+
+                <div class="form-field">
+                    <label for="loginPassword">
+                        <span class="label-icon">🔑</span>
+                        Your Password
+                    </label>
+                    <input type="password" id="loginPassword" name="password" required placeholder="Enter your password"
+                        autocomplete="current-password">
+                    <div class="error-message" id="loginPasswordError"></div>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="rememberMe" name="rememberMe">
+                        <span>Remember me</span>
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-large" id="btnSubmitLogin">
+                        <span class="btn-icon">🎈</span>
+                        Let's Go!
+                    </button>
+                </div>
+            </form>
+
+            <div class="loading-overlay hidden" id="loadingLogin">
+                <div class="loading-spinner"></div>
+                <p>Logging you in...</p>
+            </div>
+
+            <!-- Parent Access Link in Form -->
+            <div class="auth-footer">
+                <p>Are you a parent? <a href="parent-auth.html">Access Parent Dashboard →</a></p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Success Message -->
+    <div class="toast hidden" id="toast">
+        <span class="toast-icon">✓</span>
+        <span class="toast-message"></span>
+    </div>
+
+    <script src="js/auth.js"></script>
+</body>
+
+</html>

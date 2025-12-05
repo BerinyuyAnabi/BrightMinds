@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stories - Bright Minds</title>
+    <script src="js/protect.js"></script>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+
+<body>
+    <div class="animated-bg"></div>
+    <div class="dashboard">
+        <button class="btn btn-secondary" onclick="goToDashboard()">
+            <span class="btn-icon">←</span>
+            Back to Dashboard
+        </button>
+
+        <h1 style="color: var(--primary-blue); margin: 30px 0; font-size: 2.5rem; text-align: center;">
+            📖 Choose a Story
+        </h1>
+
+        <div class="activities-grid" id="storiesContainer">
+            <!-- Story 1: The Brave Little Elephant -->
+            <div class="activity-card" onclick="readStory(1)">
+                <div class="activity-icon">🐘</div>
+                <h3>The Brave Little Elephant</h3>
+                <p>A tale of courage and friendship</p>
+                <div style="margin-top: 15px; color: var(--primary-blue); font-weight: bold;">
+                    <span>⏱ 5 min read</span><br>
+                    <span>⚡ 30 XP</span>
+                </div>
+            </div>
+
+            <!-- Story 2: The Rainbow Painter -->
+            <div class="activity-card" onclick="readStory(2)">
+                <div class="activity-icon">🎨</div>
+                <h3>The Rainbow Painter</h3>
+                <p>Discover the magic of creativity</p>
+                <div style="margin-top: 15px; color: var(--primary-blue); font-weight: bold;">
+                    <span>⏱ 4 min read</span><br>
+                    <span>⚡ 25 XP</span>
+                </div>
+            </div>
+
+            <!-- Story 3: The Curious Cat's Journey -->
+            <div class="activity-card" onclick="readStory(3)">
+                <div class="activity-icon">🐱</div>
+                <h3>The Curious Cat's Journey</h3>
+                <p>Adventure awaits the curious!</p>
+                <div style="margin-top: 15px; color: var(--primary-blue); font-weight: bold;">
+                    <span>⏱ 6 min read</span><br>
+                    <span>⚡ 35 XP</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/navigation.js"></script>
+    <script>
+        // Check if user is logged in and is a child - only redirect if role is wrong
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Check localStorage first (faster, no redirect if valid)
+            const sessionData = localStorage.getItem('brightMindsSession');
+            if (sessionData) {
+                try {
+                    const userData = JSON.parse(sessionData);
+                    // If localStorage says child, allow access (don't redirect)
+                    if (userData.role === 'child') {
+                        // Silently verify with server in background, but don't redirect
+                        fetch('api/auth.php?action=verify')
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success && data.user && data.user.role === 'child') {
+                                    localStorage.setItem('brightMindsSession', JSON.stringify({
+                                        userId: data.user.userId,
+                                        username: data.user.username,
+                                        displayName: data.user.displayName,
+                                        email: data.user.email,
+                                        role: data.user.role,
+                                        avatar: data.user.avatar,
+                                        childID: data.user.childID
+                                    }));
+                                }
+                            })
+                            .catch(err => console.log('Background auth check failed:', err));
+                        return; // Allow access, don't redirect
+                    }
+                } catch (e) {
+                    // If parse fails, continue to server check
+                }
+            }
+
+            // Only verify with server if localStorage doesn't have valid child session
+            try {
+                const response = await fetch('api/auth.php?action=verify');
+                const data = await response.json();
+
+                if (!data.success || !data.user) {
+                    localStorage.removeItem('brightMindsSession');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                // Only redirect if role is explicitly parent - don't redirect for other cases
+                if (data.user.role === 'parent') {
+                    // Instead of auto-redirecting, show a friendly message
+                    document.body.innerHTML = `
+                        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5; font-family: sans-serif;">
+                            <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; max-width: 500px;">
+                                <h1 style="color: #667eea;">Parent Account Detected 👨‍👩‍👧‍👦</h1>
+                                <p>You are currently logged in as a <strong>Parent</strong>.</p>
+                                <p>This Stories page is for Children.</p>
+                                <a href="parent-dashboard.php" style="display: inline-block; padding: 12px 24px; background: #667eea; color: white; text-decoration: none; border-radius: 10px; margin-top: 20px;">Go to Parent Dashboard</a>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Update localStorage with correct role
+                localStorage.setItem('brightMindsSession', JSON.stringify({
+                    userId: data.user.userId,
+                    username: data.user.username,
+                    displayName: data.user.displayName,
+                    email: data.user.email,
+                    role: data.user.role,
+                    avatar: data.user.avatar,
+                    childID: data.user.childID
+                }));
+            } catch (error) {
+                console.error('Error verifying session:', error);
+                // If server check fails but localStorage has child session, allow access
+                if (sessionData) {
+                    try {
+                        const userData = JSON.parse(sessionData);
+                        if (userData.role === 'child') {
+                            return; // Allow access
+                        }
+                    } catch (e) {
+                        // Fall through to redirect
+                    }
+                }
+                window.location.href = 'index.html';
+            }
+        });
+
+        function readStory(storyId) {
+            window.location.href = `story-read.html?id=${storyId}`;
+        }
+    </script>
+</body>
+
+</html>

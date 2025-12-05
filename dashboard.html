@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Bright Minds</title>
+    <script src="js/protect.js"></script>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/celebrations.css">
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <div class="dashboard">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div class="user-profile">
+                <div class="user-avatar" id="userAvatar">🦉</div>
+                <div>
+                    <h1>Welcome back, <span id="userName">Explorer</span>! 👋</h1>
+                    <p>Ready for another adventure?</p>
+                </div>
+            </div>
+            
+            <div class="user-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-value" id="xpValue">0</div>
+                    <div class="stat-label">Total XP</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-value" id="levelValue">1</div>
+                    <div class="stat-label">Level</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🪙</div>
+                    <div class="stat-value" id="coinsValue">0</div>
+                    <div class="stat-label">Coins</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-value" id="streakValue">0</div>
+                    <div class="stat-label">Day Streak</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Activities -->
+        <h2 style="color: var(--primary-blue); margin: 20px 0; font-size: 2rem;">Choose Your Activity</h2>
+        <div class="activities-grid">
+            <div class="activity-card" onclick="location.href='games.html'">
+                <div class="activity-icon">🎮</div>
+                <h3>Play Games</h3>
+                <p>Fun and educational games</p>
+            </div>
+            
+            <div class="activity-card" onclick="location.href='quiz.html'">
+                <div class="activity-icon">📝</div>
+                <h3>Take a Quiz</h3>
+                <p>Test your knowledge</p>
+            </div>
+            
+            <div class="activity-card" onclick="location.href='stories.html'">
+                <div class="activity-icon">📖</div>
+                <h3>Read Stories</h3>
+                <p>Amazing tales and lessons</p>
+            </div>
+            
+            <div class="activity-card" onclick="location.href='achievements.html'">
+                <div class="activity-icon">🏆</div>
+                <h3>Achievements</h3>
+                <p>View your badges</p>
+            </div>
+        </div>
+        
+        <!-- Logout Button -->
+        <button class="btn btn-secondary" onclick="logout()" style="margin-top: 30px;">
+            <span class="btn-icon">🚪</span>
+            Logout
+        </button>
+    </div>
+
+    <script src="js/celebrations.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

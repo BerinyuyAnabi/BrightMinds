@@ -1,0 +1,347 @@
+<?php
+//Bright Minds - Dashboard API
+
+
+require_once '../includes/config.php';
+header('Content-Type: application/json');
+
+requireAuth();
+
+$db = getDB();
+$action = $_GET['action'] ?? '';
+
+switch ($action) {
+    case 'get-profile':
+        $childId = getCurrentChildId();
+
+        error_log("get-profile: childID from session = " . ($childId ?? 'NULL'));
+        error_log("get-profile: SESSION contents = " . print_r($_SESSION, true));
+
+        if (!$childId) {
+            jsonResponse(['success' => false, 'message' => 'Child ID not found in session'], 400);
+        }
+
+        // Get child profile
+        $profile = $db->selectOne("
+            SELECT childID, display_name, avatar, total_xp, current_level, coins, streak_days
+            FROM children
+            WHERE childID = ?
+        ", [$childId]);
+
+        if ($profile) {
+            jsonResponse([
+                'success' => true,
+                'profile' => $profile
+            ]);
+        } else {
+            jsonResponse(['success' => false, 'message' => 'Profile not found in database'], 404);
+        }
+        break;
+
+    case 'get-parent-info':
+        $childId = getCurrentChildId();
+
+        // Get parent info if linked
+        $parent = $db->selectOne("
+            SELECT u.userID, u.username, u.email, c.parentID
+            FROM children c
+            LEFT JOIN users u ON c.parentID = u.userID
+            WHERE c.childID = ?
+        ", [$childId]);
+
+        if ($parent && $parent['parentID']) {
+            jsonResponse([
+                'success' => true,
+                'hasParent' => true,
+                'parent' => [
+                    'username' => $parent['username'],
+                    'email' => $parent['email']
+                ]
+            ]);
+        } else {
+            jsonResponse([
+                'success' => true,
+                'hasParent' => false
+            ]);
+        }
+        break;
+
+    case 'get-recent-activities':
+        $childId = getCurrentChildId();
+        $limit = intval($_GET['limit'] ?? 5);
+
+        // Get recent activities
+        $activities = $db->select("
+            SELECT
+                ps.sessionID,
+                ps.activity_type,
+                ps.activity_id,
+                ps.start_time,
+                ps.xp_earned,
+                ps.coins_earned,
+                ps.score,
+                CASE
+                    WHEN ps.activity_type = 'game' THEN g.title
+                    WHEN ps.activity_type = 'quiz' THEN q.title
+                    ELSE ps.activity_type
+                END as activity_title
+            FROM play_sessions ps
+            LEFT JOIN games g ON ps.activity_type = 'game' AND ps.activity_id = g.gameID
+            LEFT JOIN quizzes q ON ps.activity_type = 'quiz' AND ps.activity_id = q.quizID
+            WHERE ps.childID = ?
+            ORDER BY ps.start_time DESC
+            LIMIT ?
+        ", [$childId, $limit]);
+
+        jsonResponse([
+            'success' => true,
+            'activities' => $activities
+        ]);
+        break;
+
+    case 'unlink-parent':
+        $childId = getCurrentChildId();
+
+        // Unlink parent
+        $result = $db->query("
+            UPDATE children
+            SET parentID = NULL
+            WHERE childID = ?
+        ", [$childId]);
+
+        if ($result) {
+            jsonResponse(['success' => true, 'message' => 'Parent unlinked successfully']);
+        } else {
+            jsonResponse(['success' => false, 'message' => 'Failed to unlink parent'], 500);
+        }
+        break;
+
+    case 'stats':
+        $childId = getCurrentChildId();
+
+        // Get child stats directly from children table
+        $stats = $db->selectOne("
+            SELECT childID, display_name, total_xp, current_level, coins, streak_days
+            FROM children
+            WHERE childID = ?
+        ", [$childId]);
+
+        $recentActivity = $db->select("
+            SELECT * FROM vw_recent_activities
+            WHERE childID = ?
+            ORDER BY start_time DESC
+            LIMIT 10
+        ", [$childId]);
+
+        $achievements = $db->select("
+            SELECT a.*, ca.unlocked_at
+            FROM child_achievements ca
+            JOIN achievements a ON ca.achievementID = a.achievementID
+            WHERE ca.childID = ?
+            ORDER BY ca.unlocked_at DESC
+            LIMIT 5
+        ", [$childId]);
+
+        $challenges = $db->select("
+            SELECT dc.*, cc.progress, cc.completed
+            FROM daily_challenges dc
+            LEFT JOIN child_challenges cc ON dc.challengeID = cc.challengeID AND cc.childID = ?
+            WHERE dc.active_date = CURDATE()
+        ", [$childId]);
+
+        jsonResponse([
+            'success' => true,
+            'stats' => $stats,
+            'recentActivity' => $recentActivity,
+            'achievements' => $achievements,
+            'challenges' => $challenges
+        ]);
+        break;
+        
+    case 'leaderboard':
+        $period = $_GET['period'] ?? 'weekly';
+        $leaderboard = $db->select("
+            SELECT l.*, c.display_name, c.avatar
+            FROM leaderboard l
+            JOIN children c ON l.childID = c.childID
+            WHERE l.period_type = ? AND l.period_start = ?
+            ORDER BY l.rank_position ASC
+            LIMIT 20
+        ", [$period, date('Y-m-d')]);
+        
+        jsonResponse(['success' => true, 'leaderboard' => $leaderboard]);
+        break;
+        
+    case 'achievements':
+        $childId = getCurrentChildId();
+        $all = $db->select("
+            SELECT a.*, 
+                   CASE WHEN ca.achievementID IS NOT NULL THEN 1 ELSE 0 END as unlocked,
+                   ca.unlocked_at
+            FROM achievements a
+            LEFT JOIN child_achievements ca ON a.achievementID = ca.achievementID AND ca.childID = ?
+            WHERE a.is_active = 1
+            ORDER BY unlocked DESC, a.rarity, a.achievementID
+        ", [$childId]);
+        
+        jsonResponse(['success' => true, 'achievements' => $all]);
+        break;
+
+    case 'verify-invite-code':
+        $inviteCode = strtoupper($_GET['code'] ?? '');
+        if (empty($inviteCode)) {
+            jsonResponse(['success' => false, 'message' => 'Invite code is required'], 400);
+        }
+
+        // First check users.parent_code (PAR-XXXXX format)
+        $codeData = $db->selectOne("
+            SELECT userID, username, email FROM users 
+            WHERE parent_code = ? AND role = 'parent'
+        ", [$inviteCode]);
+
+        if ($codeData) {
+            jsonResponse(['success' => true, 'message' => 'Invite code is valid', 'parentInfo' => $codeData]);
+        }
+        
+        // Also check parent_invites table 
+        $invite = $db->selectOne("
+            SELECT pi.parentID, u.username, u.email 
+            FROM parent_invites pi
+            JOIN users u ON pi.parentID = u.userID
+            WHERE pi.invite_code = ? AND pi.is_used = 0 AND pi.expires_at > NOW()
+        ", [$inviteCode]);
+        
+        if ($invite) {
+            jsonResponse(['success' => true, 'message' => 'Invite code is valid', 'parentInfo' => $invite]);
+        }
+        
+        jsonResponse(['success' => false, 'message' => 'Invalid or expired invite code'], 400);
+        break;
+
+    case 'link-to-parent':
+        $childId = getCurrentChildId();
+        $inviteCode = strtoupper($_GET['code'] ?? '');
+
+        if (!$childId) {
+            jsonResponse(['success' => false, 'message' => 'Child ID not found'], 400);
+        }
+
+        $parentId = null;
+        $inviteId = null;
+        
+        // First check users.parent_code (PAR-XXXXX format)
+        $parent = $db->selectOne("
+            SELECT userID FROM users
+            WHERE parent_code = ? AND role = 'parent'
+        ", [$inviteCode]);
+
+        if ($parent) {
+            $parentId = $parent['userID'];
+        } else {
+            // Also check parent_invites table (8-char format)
+            $invite = $db->selectOne("
+                SELECT inviteID, parentID FROM parent_invites
+                WHERE invite_code = ? AND is_used = 0 AND expires_at > NOW()
+            ", [$inviteCode]);
+            
+            if ($invite) {
+                $parentId = $invite['parentID'];
+                $inviteId = $invite['inviteID'];
+            }
+        }
+
+        if (!$parentId) {
+            jsonResponse(['success' => false, 'message' => 'Invalid or expired invite code'], 400);
+        }
+
+        // Link child to parent
+        $update = $db->update("
+            UPDATE children
+            SET parentID = ?
+            WHERE childID = ?
+        ", [$parentId, $childId]);
+
+        if ($update !== false) {
+            // Mark invite as used if it was from parent_invites table
+            if ($inviteId) {
+                $db->update("UPDATE parent_invites SET is_used = 1 WHERE inviteID = ?", [$inviteId]);
+            }
+            
+            jsonResponse([
+                'success' => true,
+                'message' => 'Child linked to parent successfully'
+            ]);
+        } else {
+            jsonResponse([
+                'success' => false,
+                'message' => 'Failed to link child to parent. Please try again.'
+            ]);
+        }
+
+        break;
+
+    case 'get-goals':
+        $childId = getCurrentChildId();
+        
+        // If child_id not in session, try to get it from user_id
+        if (!$childId) {
+            $userId = getCurrentUserId();
+            if ($userId) {
+                $child = $db->selectOne("SELECT childID FROM children WHERE userID = ?", [$userId]);
+                if ($child) {
+                    $childId = $child['childID'];
+                    $_SESSION['child_id'] = $childId; 
+                }
+            }
+        }
+        
+        if (!$childId) {
+            error_log("get-goals: Child ID not found. UserID: " . getCurrentUserId() . ", SESSION: " . print_r($_SESSION, true));
+            jsonResponse(['success' => false, 'message' => 'Child ID not found'], 400);
+        }
+        
+        error_log("get-goals: Fetching goals for childID: " . $childId);
+        
+        // Create table if it doesn't exist 
+        $db->query("
+            CREATE TABLE IF NOT EXISTS learning_goals (
+                goalID INT AUTO_INCREMENT PRIMARY KEY,
+                childID INT NOT NULL,
+                parentID INT NOT NULL,
+                goal_type VARCHAR(50),
+                goal_description TEXT,
+                target_value INT,
+                current_progress INT DEFAULT 0,
+                start_date DATE,
+                end_date DATE,
+                status ENUM('active', 'completed', 'expired') DEFAULT 'active',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (childID) REFERENCES children(childID) ON DELETE CASCADE,
+                FOREIGN KEY (parentID) REFERENCES users(userID) ON DELETE CASCADE,
+                INDEX idx_child (childID),
+                INDEX idx_status (status)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ", []);
+        
+        // Get active goals Show goals that are active and haven't expired yet
+        $today = date('Y-m-d');
+        $goals = $db->select("
+            SELECT * FROM learning_goals
+            WHERE childID = ?
+            AND status = 'active'
+            AND end_date >= ?
+            ORDER BY created_at DESC
+        ", [$childId, $today]);
+        
+        error_log("get-goals: Found " . count($goals) . " goals for childID: " . $childId);
+        
+        jsonResponse([
+            'success' => true,
+            'goals' => $goals
+        ]);
+        break;
+        
+    default:
+        jsonResponse(['success' => false, 'message' => 'Invalid action'], 400);
+}
+?>
